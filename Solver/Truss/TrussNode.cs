@@ -19,8 +19,8 @@ namespace Solver
 
         #region Private Fields
 
-        private eRestraintCondition _xDirection;
-        private eRestraintCondition _yDirection;
+        private eRestraint _xRestraint;
+        private eRestraint _yRestraint;
         private double _fx;
         private double _fy;
         private double _dispx;
@@ -30,8 +30,8 @@ namespace Solver
 
         #region Public Properties
 
-        public eRestraintCondition XDirection { get => _xDirection; set => _xDirection = value; }
-        public eRestraintCondition YDirection { get => _yDirection; set => _yDirection = value; }
+        public eRestraint XRestraint { get => _xRestraint; set => _xRestraint = value; }
+        public eRestraint YRestraint { get => _yRestraint; set => _yRestraint = value; }
         public double Fx { get => _fx; set => _fx = value; }
         public double Fy { get => _fy; set => _fy = value; }
         public double Dispx { get => _dispx; set => _dispx = value; }

@@ -75,6 +75,9 @@ namespace FESolver
             this.label4 = new System.Windows.Forms.Label();
             this.gcElements = new DevExpress.XtraGrid.GridControl();
             this.gvElements = new DevExpress.XtraGrid.Views.Grid.GridView();
+            this.cmbResult = new System.Windows.Forms.ComboBox();
+            this.label9 = new System.Windows.Forms.Label();
+            this.txtNodeIDForNodes = new DevExpress.XtraEditors.TextEdit();
             ((System.ComponentModel.ISupportInitialize)(this.ribbonControl1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.gcNodes)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.gvNodes)).BeginInit();
@@ -92,6 +95,7 @@ namespace FESolver
             this.groupBox6.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.gcElements)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.gvElements)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.txtNodeIDForNodes.Properties)).BeginInit();
             this.SuspendLayout();
             // 
             // ribbonControl1
@@ -121,11 +125,11 @@ namespace FESolver
             // 
             // gcNodes
             // 
-            this.gcNodes.Location = new System.Drawing.Point(6, 114);
+            this.gcNodes.Location = new System.Drawing.Point(4, 73);
             this.gcNodes.MainView = this.gvNodes;
             this.gcNodes.MenuManager = this.ribbonControl1;
             this.gcNodes.Name = "gcNodes";
-            this.gcNodes.Size = new System.Drawing.Size(342, 192);
+            this.gcNodes.Size = new System.Drawing.Size(770, 233);
             this.gcNodes.TabIndex = 1;
             this.gcNodes.ViewCollection.AddRange(new DevExpress.XtraGrid.Views.Base.BaseView[] {
             this.gvNodes});
@@ -148,7 +152,7 @@ namespace FESolver
             // 
             // BtnAnalyze
             // 
-            this.BtnAnalyze.Location = new System.Drawing.Point(1145, 298);
+            this.BtnAnalyze.Location = new System.Drawing.Point(1160, 295);
             this.BtnAnalyze.Name = "BtnAnalyze";
             this.BtnAnalyze.Size = new System.Drawing.Size(130, 42);
             this.BtnAnalyze.TabIndex = 4;
@@ -156,8 +160,9 @@ namespace FESolver
             // 
             // pictureBox1
             // 
-            this.pictureBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.pictureBox1.Location = new System.Drawing.Point(1240, 495);
+            this.pictureBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.pictureBox1.Location = new System.Drawing.Point(1238, 495);
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.Size = new System.Drawing.Size(80, 331);
             this.pictureBox1.TabIndex = 6;
@@ -181,6 +186,8 @@ namespace FESolver
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.txtNodeIDForNodes);
+            this.groupBox1.Controls.Add(this.label9);
             this.groupBox1.Controls.Add(this.txtNodeY);
             this.groupBox1.Controls.Add(this.label12);
             this.groupBox1.Controls.Add(this.txtNodeX);
@@ -189,14 +196,14 @@ namespace FESolver
             this.groupBox1.Controls.Add(this.gcNodes);
             this.groupBox1.Location = new System.Drawing.Point(14, 171);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(355, 312);
+            this.groupBox1.Size = new System.Drawing.Size(782, 312);
             this.groupBox1.TabIndex = 8;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Nodes Info";
             // 
             // txtNodeY
             // 
-            this.txtNodeY.Location = new System.Drawing.Point(58, 56);
+            this.txtNodeY.Location = new System.Drawing.Point(300, 30);
             this.txtNodeY.Name = "txtNodeY";
             this.txtNodeY.Size = new System.Drawing.Size(67, 21);
             this.txtNodeY.TabIndex = 26;
@@ -205,7 +212,7 @@ namespace FESolver
             // label12
             // 
             this.label12.AutoSize = true;
-            this.label12.Location = new System.Drawing.Point(12, 59);
+            this.label12.Location = new System.Drawing.Point(254, 32);
             this.label12.Name = "label12";
             this.label12.Size = new System.Drawing.Size(40, 13);
             this.label12.TabIndex = 25;
@@ -213,7 +220,7 @@ namespace FESolver
             // 
             // txtNodeX
             // 
-            this.txtNodeX.Location = new System.Drawing.Point(58, 29);
+            this.txtNodeX.Location = new System.Drawing.Point(182, 29);
             this.txtNodeX.Name = "txtNodeX";
             this.txtNodeX.Size = new System.Drawing.Size(67, 21);
             this.txtNodeX.TabIndex = 24;
@@ -222,7 +229,7 @@ namespace FESolver
             // label13
             // 
             this.label13.AutoSize = true;
-            this.label13.Location = new System.Drawing.Point(12, 32);
+            this.label13.Location = new System.Drawing.Point(136, 31);
             this.label13.Name = "label13";
             this.label13.Size = new System.Drawing.Size(40, 13);
             this.label13.TabIndex = 23;
@@ -230,9 +237,9 @@ namespace FESolver
             // 
             // btnAddNode
             // 
-            this.btnAddNode.Location = new System.Drawing.Point(151, 38);
+            this.btnAddNode.Location = new System.Drawing.Point(425, 20);
             this.btnAddNode.Name = "btnAddNode";
-            this.btnAddNode.Size = new System.Drawing.Size(66, 34);
+            this.btnAddNode.Size = new System.Drawing.Size(98, 38);
             this.btnAddNode.TabIndex = 22;
             this.btnAddNode.Text = "Add Node";
             this.btnAddNode.UseVisualStyleBackColor = true;
@@ -247,7 +254,7 @@ namespace FESolver
             this.groupBox2.Controls.Add(this.txtXComponent);
             this.groupBox2.Controls.Add(this.label6);
             this.groupBox2.Controls.Add(this.btnAddLoad);
-            this.groupBox2.Location = new System.Drawing.Point(375, 171);
+            this.groupBox2.Location = new System.Drawing.Point(433, 171);
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.Size = new System.Drawing.Size(357, 312);
             this.groupBox2.TabIndex = 27;
@@ -280,11 +287,11 @@ namespace FESolver
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(45, 86);
+            this.label3.Location = new System.Drawing.Point(41, 84);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(13, 13);
+            this.label3.Size = new System.Drawing.Size(17, 13);
             this.label3.TabIndex = 27;
-            this.label3.Text = "Y";
+            this.label3.Text = "fy";
             // 
             // txtXComponent
             // 
@@ -296,11 +303,11 @@ namespace FESolver
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(45, 59);
+            this.label6.Location = new System.Drawing.Point(41, 57);
             this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(13, 13);
+            this.label6.Size = new System.Drawing.Size(17, 13);
             this.label6.TabIndex = 25;
-            this.label6.Text = "X";
+            this.label6.Text = "fx";
             // 
             // btnAddLoad
             // 
@@ -319,7 +326,7 @@ namespace FESolver
             this.groupBox3.Controls.Add(this.N);
             this.groupBox3.Controls.Add(this.btnAddRestrain);
             this.groupBox3.Controls.Add(this.gcboundaryCondition);
-            this.groupBox3.Location = new System.Drawing.Point(738, 171);
+            this.groupBox3.Location = new System.Drawing.Point(796, 171);
             this.groupBox3.Name = "groupBox3";
             this.groupBox3.Size = new System.Drawing.Size(357, 312);
             this.groupBox3.TabIndex = 31;
@@ -513,20 +520,47 @@ namespace FESolver
             this.gvElements.GridControl = this.gcElements;
             this.gvElements.Name = "gvElements";
             // 
-            // FESolver
+            // cmbResult
+            // 
+            this.cmbResult.FormattingEnabled = true;
+            this.cmbResult.Location = new System.Drawing.Point(1159, 396);
+            this.cmbResult.Name = "cmbResult";
+            this.cmbResult.Size = new System.Drawing.Size(148, 21);
+            this.cmbResult.TabIndex = 34;
+            // 
+            // label9
+            // 
+            this.label9.AutoSize = true;
+            this.label9.Location = new System.Drawing.Point(10, 31);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(46, 13);
+            this.label9.TabIndex = 31;
+            this.label9.Text = "Node ID";
+            // 
+            // txtNodeIDForNodes
+            // 
+            this.txtNodeIDForNodes.EditValue = "1";
+            this.txtNodeIDForNodes.Location = new System.Drawing.Point(61, 30);
+            this.txtNodeIDForNodes.MenuManager = this.ribbonControl1;
+            this.txtNodeIDForNodes.Name = "txtNodeIDForNodes";
+            this.txtNodeIDForNodes.Size = new System.Drawing.Size(67, 20);
+            this.txtNodeIDForNodes.TabIndex = 33;
+            // 
+            // Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1332, 831);
+            this.Controls.Add(this.groupBox1);
+            this.Controls.Add(this.cmbResult);
             this.Controls.Add(this.Elements);
             this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.groupBox2);
-            this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.pictureBox1);
             this.Controls.Add(this.BtnAnalyze);
             this.Controls.Add(this.chartDrawing);
             this.Controls.Add(this.ribbonControl1);
-            this.Name = "FESolver";
+            this.Name = "Main";
             this.Ribbon = this.ribbonControl1;
             this.Text = "Form1";
             ((System.ComponentModel.ISupportInitialize)(this.ribbonControl1)).EndInit();
@@ -551,6 +585,7 @@ namespace FESolver
             this.groupBox6.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.gcElements)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.gvElements)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.txtNodeIDForNodes.Properties)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -604,6 +639,9 @@ namespace FESolver
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.TextBox txtNodeI;
         private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.ComboBox cmbResult;
+        private System.Windows.Forms.Label label9;
+        private DevExpress.XtraEditors.TextEdit txtNodeIDForNodes;
     }
 }
 

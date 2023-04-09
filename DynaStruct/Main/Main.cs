@@ -1,4 +1,8 @@
 ﻿using DevExpress.XtraCharts;
+using DevExpress.XtraEditors.Repository;
+using DevExpress.XtraGrid;
+using DevExpress.XtraGrid.Columns;
+using DevExpress.XtraGrid.Views.Grid;
 using Solver;
 using System;
 using System.Collections.Generic;
@@ -14,8 +18,10 @@ namespace FESolver
     {
         Dispx,
         Dispy,
-
+        stress,
+        strain
     }
+
     public partial class Main : DevExpress.XtraBars.Ribbon.RibbonForm
     {
         #region Ctor
@@ -29,18 +35,27 @@ namespace FESolver
             //_restrainedNodes = new List<RestrainedNode>();
             //_nodalForces = new List<PointLoad>();
 
-            CreateExample1();
+            //CreateExample3();
 
             prepareUI();
+            setComboBoxItems();
             SetNodeTableColumns();
             SetElementsTableColumns();
             SetBCTableColumns();
             SetLoadTableColumns();
             EditNodeTableGridView();
             EditElementsTableGridView();
-            EditBCTableGridView();
-            EditLoadTableGridView();
+            //EditBCTableGridView();
+            //EditLoadTableGridView();
             drawChart();
+        }
+
+        private void setComboBoxItems()
+        {
+            cmbResult.Items.Add("Dispx");
+            cmbResult.Items.Add("Dispy");
+            cmbResult.Items.Add("Stress");
+            cmbResult.Items.Add("Strain");
         }
 
         #endregion
@@ -53,8 +68,19 @@ namespace FESolver
         private DataTable _dataTrussElementsTable;
         private DataTable _dataBoundaryConditionsTable;
         private DataTable _dataLoadTable;
+        private int _nodeId;
         //private List<RestrainedNode> _restrainedNodes;
         //private List<PointLoad> _nodalForces;
+
+        private string _columnNameNodeId = "nodeId";
+        private string _columnNameXcoord = "xCoord";
+        private string _columnNameYcoord = "yCoord";
+        private string _columnNameXRestaint = "xRestraint";
+        private string _columnNameYRestaint = "yRestraint";
+        private string _columnNameFx = "fx";
+        private string _columnNameFy = "fy";
+        private bool _disableXrestraint=false;
+        private bool _disableYrestraint=false;
 
         #endregion
 
@@ -63,18 +89,109 @@ namespace FESolver
         private void SubscribeToEvents()
         {
             BtnAnalyze.Click += BtnAnalyze_Click;
-            //btnAddNode.Click += BtnAddNode_Click;
+            btnAddNode.Click += BtnAddNode_Click;
+            gvNodes.CellValueChanged += GvNodes_CellValueChanged;
+            gvNodes.CustomRowCellEdit += GvNodes_CustomRowCellEdit;
+            gvNodes.RowCellStyle += GvNodes_RowCellStyle;
             //btnAddElement.Click += BtnAddElement_Click;
             //btnAddLoad.Click += BtnAddLoad_Click;
             //btnAddRestrain.Click += BtnAddRestrain_Click;
             //btnSolveTruss.Click += BtnSolveTruss_Click;
             pictureBox1.Paint += canvasPictureBox_Paint;
+            cmbResult.SelectedIndexChanged += CmbResult_SelectedIndexChanged;
+        }
+
+        private void GvNodes_RowCellStyle(object sender, RowCellStyleEventArgs e)
+        {
+            if (_disableXrestraint && e.Column.FieldName == _columnNameFx)
+            {
+                e.Appearance.BackColor = Color.LightGray;
+            }
+            if (_disableYrestraint && e.Column.FieldName == _columnNameFy)
+            {
+                e.Appearance.BackColor = Color.LightGray;
+            }
+        }
+
+        private void GvNodes_CustomRowCellEdit(object sender, CustomRowCellEditEventArgs e)
+        {
+            if (_disableXrestraint && e.Column.FieldName ==_columnNameFx)
+            {
+                e.RepositoryItem = new RepositoryItemTextEdit();
+                e.RepositoryItem.ReadOnly = true;
+                gvNodes.SetRowCellValue(e.RowHandle, _columnNameFx, "?");
+            }
+            if (!_disableXrestraint && e.Column.FieldName == _columnNameFx)
+            {
+                e.RepositoryItem = new RepositoryItemTextEdit();
+                e.RepositoryItem.ReadOnly = false;
+            }
+
+            if (_disableYrestraint && e.Column.FieldName == _columnNameFy)
+            {
+                e.RepositoryItem = new RepositoryItemTextEdit();
+                e.RepositoryItem.ReadOnly = true;
+                gvNodes.SetRowCellValue(e.RowHandle, _columnNameFy, "?");
+
+            }
+            if (!_disableYrestraint && e.Column.FieldName == _columnNameFy)
+            {
+                e.RepositoryItem = new RepositoryItemTextEdit();
+                e.RepositoryItem.ReadOnly = false;
+            }
+        }
+
+        private void GvNodes_CellValueChanged(object sender, DevExpress.XtraGrid.Views.Base.CellValueChangedEventArgs e)
+        {
+            if (e.RowHandle != GridControl.InvalidRowHandle)
+            {
+                var node =(TrussNode)_nodesList[e.RowHandle];
+                node.Xcoord =(double)gvNodes.GetRowCellValue(e.RowHandle, _columnNameXcoord);
+                node.Ycoord =(double)gvNodes.GetRowCellValue(e.RowHandle, _columnNameYcoord);
+                if (e.Column.FieldName==_columnNameXRestaint )
+                {
+                    node.XRestraint = (eRestraint)Enum.Parse(typeof(eRestraint), (string)gvNodes.GetRowCellValue(e.RowHandle, _columnNameXRestaint));
+                }
+                if (e.Column.FieldName == _columnNameYRestaint)
+                {
+                    node.YRestraint = (eRestraint)Enum.Parse(typeof(eRestraint), (string)gvNodes.GetRowCellValue(e.RowHandle, _columnNameYRestaint));
+                }
+                if (node.XRestraint==eRestraint.Free && _disableXrestraint && e.Column.FieldName == _columnNameXRestaint)
+                {
+                    node.Fx = Convert.ToDouble(gvNodes.GetRowCellValue(e.RowHandle, _columnNameFx));
+                    _disableXrestraint = false;
+                }
+                else
+                {
+                    _disableXrestraint = true;
+
+                }
+                if (node.YRestraint==eRestraint.Free && _disableYrestraint&& e.Column.FieldName == _columnNameYRestaint)
+                {
+                    node.Fy =Convert.ToDouble(gvNodes.GetRowCellValue(e.RowHandle, _columnNameFy));
+                    _disableYrestraint = false;
+                }
+                else
+                {
+                    _disableYrestraint = true;
+
+                }
+
+
+
+                
+            }
+        }
+
+        private void CmbResult_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            AddDisplacementColorMapXDirection((eResultToShow)cmbResult.SelectedIndex);
         }
 
         private void BtnAnalyze_Click(object sender, System.EventArgs e)
         {
             Assembler assembler = new Assembler(_TrussElementsList, _nodesList);
-            AddDisplacementColorMapXDirection(eResultToShow.Dispy);
+            AddDisplacementColorMapXDirection(eResultToShow.Dispx);
         }
 
         private void CreateExample1()
@@ -117,6 +234,42 @@ namespace FESolver
 
 
         }
+        private void CreateExample3()
+        {
+            var E = 2 * Math.Pow(10, 11);
+            var A = 5000;
+
+            AddNode(1, 0, 6);
+            AddNode(2, 4, 6);
+            AddNode(3, 8, 6);
+            AddNode(4, 12, 6);
+            AddNode(5, 16, 6);
+            AddNode(6, 12, 2);
+            AddNode(7, 8, 0);
+            AddNode(8, 4, 2);
+
+            AddMember("A", 1, 2, E, A);
+            AddMember("B", 2, 3, E, A);
+            AddMember("C", 3, 4, E, A);
+            AddMember("D", 4, 5, E, A);
+            AddMember("E", 5, 6, E, A);
+            AddMember("F", 6, 7, E, A);
+            AddMember("G", 7, 8, E, A);
+            AddMember("H", 1, 8, E, A);
+            AddMember("I", 2, 8, E, A);
+            AddMember("J", 3, 7, E, A);
+            AddMember("K", 4, 6, E, A);
+            AddMember("L", 3, 8, E, A);
+            AddMember("M", 3, 6, E, A);
+
+
+            AddRestrainedNode(1, true, true);
+            AddRestrainedNode(5, false, true);
+
+            AddLoad(2, 0, -10000);
+            AddLoad(3, 0, -30000);
+            AddLoad(4, 0, -5000);
+        }
 
         private void AddLoad(int nodeId, double fx, double fy)
         {
@@ -129,8 +282,8 @@ namespace FESolver
         private void AddRestrainedNode(int nodeId, bool isXRestrained, bool isYRestrained)
         {
             var node = (TrussNode)GetNodeById(nodeId);
-            node.XDirection = isXRestrained ? eRestraintCondition.restrained : eRestraintCondition.free;
-            node.YDirection = isYRestrained ? eRestraintCondition.restrained : eRestraintCondition.free;
+            node.XRestraint = isXRestrained ? eRestraint.Pinned : eRestraint.Free;
+            node.YRestraint = isYRestrained ? eRestraint.Pinned : eRestraint.Free;
         }
 
         private Node GetNodeById(int NodeId)
@@ -152,6 +305,7 @@ namespace FESolver
 
         private void prepareUI()
         {
+            _nodeId = 1;
             //cmbSupportType.Items.Add(eRestraintCondition.X);
             //cmbSupportType.Items.Add(eRestraintCondition.Y);
             //cmbSupportType.Items.Add(eRestraintCondition.XY);
@@ -165,38 +319,31 @@ namespace FESolver
 
         private void BtnSolveTruss_Click(object sender, EventArgs e)
         {
-           
+
         }
 
-        private void AddDisplacementColorMapXDirection(eResultToShow type, int magnificationFactor = 150000000, int numPoints = 200)
+        private void AddDisplacementColorMapXDirection(eResultToShow type, int magnificationFactor = 300000000, int numPoints = 200)
         {
-            var xcoordList = new List<double>();
-            var ycoordList = new List<double>();
-            var intensities = new List<double>();
-
-            double minValue;
-            double maxValue;
-            switch (type)
-            {
-                case eResultToShow.Dispx:
-                    minValue = _nodesList.Cast<TrussNode>().Min(x => Math.Abs(x.Dispx));
-                    maxValue = _nodesList.Cast<TrussNode>().Max(x => Math.Abs(x.Dispx));
-                    break;
-                case eResultToShow.Dispy:
-                    minValue = _nodesList.Cast<TrussNode>().Min(x => Math.Abs(x.Dispy));
-                    maxValue = _nodesList.Cast<TrussNode>().Max(x => Math.Abs(x.Dispy));
-                    break;
-
-                default:
-                    minValue = _nodesList.Cast<TrussNode>().Min(x => Math.Abs(x.Dispy));
-                    maxValue = _nodesList.Cast<TrussNode>().Max(x => Math.Abs(x.Dispy));
-                    break;
-            }
-
             // Create a scatter chart series
             var series = new Series("Intensity", ViewType.Point);
             PointSeriesView seriesView = (PointSeriesView)series.View;
 
+            GetCoordinates(magnificationFactor, numPoints, out List<double> xcoordList, out List<double> ycoordList);
+
+            List<double> intensities = GetIntesities(numPoints, type);
+
+            SetMinMaxValues(type, out double minValue, out double maxValue);
+
+            // Create a ColorMap object with the jet colormap and the range of intensities
+            SetColorMap(xcoordList, ycoordList, series, seriesView, intensities, minValue, maxValue);
+
+            chartDrawing.Series.Add(series);
+        }
+
+        private void GetCoordinates(int magnificationFactor, int numPoints, out List<double> xcoordList, out List<double> ycoordList)
+        {
+            xcoordList = new List<double>();
+            ycoordList = new List<double>();
             foreach (var element in _TrussElementsList)
             {
                 //var element = _TrussElementsList.First();
@@ -213,10 +360,11 @@ namespace FESolver
 
                 xcoordList.AddRange(Enumerable.Range(0, numPoints).Select(i => x1 + i * (x2 - x1) / (numPoints - 1.0)));
                 ycoordList.AddRange(Enumerable.Range(0, numPoints).Select(i => y1 + i * (y2 - y1) / (numPoints - 1.0)));
-                intensities.AddRange(Enumerable.Range(0, numPoints).Select(i => Math.Abs(NodeI.Dispy + i * (NodeJ.Dispy - NodeI.Dispy) / (numPoints - 1.0))));
             }
+        }
 
-            // Create a ColorMap object with the jet colormap and the range of intensities
+        private static void SetColorMap(List<double> xcoordList, List<double> ycoordList, Series series, PointSeriesView seriesView, List<double> intensities, double minValue, double maxValue)
+        {
             ColorMap colorMap = new ColorMap(minValue, maxValue);
             for (int i = 0; i < intensities.Count; i++)
             {
@@ -226,9 +374,69 @@ namespace FESolver
                 series.Points.Add(seriesPoint);
             }
             seriesView.PointMarkerOptions.Kind = MarkerKind.Circle;
-            seriesView.PointMarkerOptions.Size = 3;
+            seriesView.PointMarkerOptions.Size = 4;
+        }
 
-            chartDrawing.Series.Add(series);
+        private void SetMinMaxValues(eResultToShow type, out double minValue, out double maxValue)
+        {
+            switch (type)
+            {
+                case eResultToShow.Dispx:
+                    minValue = _nodesList.Cast<TrussNode>().Min(x => Math.Abs(x.Dispx));
+                    maxValue = _nodesList.Cast<TrussNode>().Max(x => Math.Abs(x.Dispx));
+                    break;
+                case eResultToShow.Dispy:
+                    minValue = _nodesList.Cast<TrussNode>().Min(x => Math.Abs(x.Dispy));
+                    maxValue = _nodesList.Cast<TrussNode>().Max(x => Math.Abs(x.Dispy));
+                    break;
+
+                default:
+                    minValue = _nodesList.Cast<TrussNode>().Min(x => Math.Abs(x.Dispy));
+                    maxValue = _nodesList.Cast<TrussNode>().Max(x => Math.Abs(x.Dispy));
+                    break;
+            }
+        }
+
+        private List<double> GetIntesities(int numPoints, eResultToShow type)
+        {
+            var intensities = new List<double>();
+
+            foreach (var element in _TrussElementsList)
+            {
+                var NodeI = (TrussNode)element.NodeI;
+                var NodeJ = (TrussNode)element.NodeJ;
+                SetStartAndEndValues(type, NodeI, NodeJ, out double start, out double End);
+                intensities.AddRange(Enumerable.Range(0, numPoints).Select(i => Math.Abs(start + i * (End - start) / (numPoints - 1.0))));
+            }
+
+            return intensities;
+        }
+
+        private static void SetStartAndEndValues(eResultToShow type, TrussNode NodeI, TrussNode NodeJ, out double start, out double End)
+        {
+            switch (type)
+            {
+                case eResultToShow.Dispx:
+                    start = NodeI.Dispx;
+                    End = NodeJ.Dispx;
+                    break;
+                case eResultToShow.Dispy:
+                    start = NodeI.Dispy;
+                    End = NodeJ.Dispy;
+                    break;
+                case eResultToShow.stress:
+                    start = NodeI.Dispx; //TODO
+                    End = NodeJ.Dispx;
+                    break;
+                case eResultToShow.strain:
+                    start = NodeI.Dispx; //TODO
+                    End = NodeJ.Dispx;
+                    break;
+                default:
+                    start = NodeI.Dispx;
+                    End = NodeJ.Dispx;
+                    break;
+            }
         }
 
         private void BtnAddRestrain_Click(object sender, EventArgs e)
@@ -261,12 +469,18 @@ namespace FESolver
             gvNodes.OptionsView.ShowIndicator = false;
             gvNodes.OptionsView.AllowHtmlDrawHeaders = true;
             gvNodes.OptionsView.ColumnAutoWidth = true;
-            gvNodes.Columns[0].AppearanceHeader.TextOptions.HAlignment = DevExpress.Utils.HorzAlignment.Near;
-            gvNodes.Columns[1].AppearanceHeader.TextOptions.HAlignment = DevExpress.Utils.HorzAlignment.Center;
-            gvNodes.Columns[2].AppearanceHeader.TextOptions.HAlignment = DevExpress.Utils.HorzAlignment.Center;
-            gvNodes.Columns[0].AppearanceCell.TextOptions.HAlignment = DevExpress.Utils.HorzAlignment.Near;
-            gvNodes.Columns[1].AppearanceCell.TextOptions.HAlignment = DevExpress.Utils.HorzAlignment.Center;
-            gvNodes.Columns[2].AppearanceCell.TextOptions.HAlignment = DevExpress.Utils.HorzAlignment.Center;
+            gvNodes.Columns[_columnNameNodeId].AppearanceHeader.TextOptions.HAlignment = DevExpress.Utils.HorzAlignment.Near;
+            gvNodes.Columns[_columnNameNodeId].AppearanceCell.TextOptions.HAlignment = DevExpress.Utils.HorzAlignment.Near;
+            for (int i = 1; i < gvNodes.Columns.Count; i++)
+            {
+                gvNodes.Columns[i].AppearanceHeader.TextOptions.HAlignment = DevExpress.Utils.HorzAlignment.Center;
+                gvNodes.Columns[i].AppearanceCell.TextOptions.HAlignment = DevExpress.Utils.HorzAlignment.Center;
+            }
+            gvNodes.BestFitColumns();
+            RepositoryItemComboBox combo = new RepositoryItemComboBox();
+            combo.Items.AddRange(Enum.GetValues(typeof(eRestraint)).Cast<eRestraint>().Select(e => e.ToString()).ToArray());
+            gvNodes.Columns[_columnNameXRestaint].ColumnEdit = combo;
+            gvNodes.Columns[_columnNameYRestaint].ColumnEdit = combo;
         }
 
         private void EditElementsTableGridView()
@@ -294,7 +508,7 @@ namespace FESolver
             gvBoundaryCondition.OptionsView.ShowIndicator = false;
             gvBoundaryCondition.OptionsView.AllowHtmlDrawHeaders = true;
             gvBoundaryCondition.OptionsView.ColumnAutoWidth = true;
-            gvBoundaryCondition.Columns[0].AppearanceHeader.TextOptions.HAlignment = DevExpress.Utils.HorzAlignment.Near;
+            gvBoundaryCondition.Columns[_columnNameNodeId].AppearanceHeader.TextOptions.HAlignment = DevExpress.Utils.HorzAlignment.Near;
             gvBoundaryCondition.Columns[1].AppearanceHeader.TextOptions.HAlignment = DevExpress.Utils.HorzAlignment.Center;
             gvBoundaryCondition.Columns[0].AppearanceCell.TextOptions.HAlignment = DevExpress.Utils.HorzAlignment.Near;
             gvBoundaryCondition.Columns[1].AppearanceCell.TextOptions.HAlignment = DevExpress.Utils.HorzAlignment.Center;
@@ -322,9 +536,13 @@ namespace FESolver
             foreach (Node node in _nodesList)
             {
                 row = _dataNodeTable.NewRow();
-                row[0] = node.ID;
-                row[1] = node.Xcoord;
-                row[2] = node.Ycoord;
+                row[_columnNameNodeId] = node.ID;
+                row[_columnNameXcoord] = node.Xcoord;
+                row[_columnNameYcoord] = node.Ycoord;
+                row[_columnNameXRestaint] = "Free";
+                row[_columnNameYRestaint] = "Free";
+                row[_columnNameFx] = 0;
+                row[_columnNameFy] = 0;
                 _dataNodeTable.Rows.Add(row);
             }
         }
@@ -374,9 +592,13 @@ namespace FESolver
         private void SetNodeTableColumns()
         {
             _dataNodeTable = new DataTable();
-            _dataNodeTable.Columns.Add("NodeID", typeof(int));
-            _dataNodeTable.Columns.Add("Xcoord", typeof(double)); ;
-            _dataNodeTable.Columns.Add("Ycoord", typeof(double));
+            _dataNodeTable.Columns.Add(new DataColumn() { ColumnName = _columnNameNodeId, DataType = typeof(int), Caption = "Node ID" });
+            _dataNodeTable.Columns.Add(new DataColumn() { ColumnName = _columnNameXcoord, DataType = typeof(double), Caption = "X-Coord" });
+            _dataNodeTable.Columns.Add(new DataColumn() { ColumnName = _columnNameYcoord, DataType = typeof(double), Caption = "Y-Coord" });
+            _dataNodeTable.Columns.Add(new DataColumn() { ColumnName = _columnNameXRestaint, DataType = typeof(string), Caption = "X-Restraint" });
+            _dataNodeTable.Columns.Add(new DataColumn() { ColumnName = _columnNameYRestaint, DataType = typeof(string), Caption = "Y-Restraint" });
+            _dataNodeTable.Columns.Add(new DataColumn() { ColumnName = _columnNameFx, DataType = typeof(string), Caption = "Fx" });
+            _dataNodeTable.Columns.Add(new DataColumn() { ColumnName = _columnNameFy, DataType = typeof(string), Caption = "Fy" });
             gcNodes.DataSource = _dataNodeTable;
         }
 
@@ -393,7 +615,7 @@ namespace FESolver
         {
             _dataBoundaryConditionsTable = new DataTable();
             _dataBoundaryConditionsTable.Columns.Add(" Node ID", typeof(int));
-            _dataBoundaryConditionsTable.Columns.Add("Restrained Direction", typeof(eRestraintCondition));
+            _dataBoundaryConditionsTable.Columns.Add("Restrained Direction", typeof(eRestraint));
             gcboundaryCondition.DataSource = _dataBoundaryConditionsTable;
         }
 
@@ -401,8 +623,7 @@ namespace FESolver
         {
             _dataLoadTable = new DataTable();
             _dataLoadTable.Columns.Add(" Node ID", typeof(int));
-            _dataLoadTable.Columns.Add("X Component", typeof(double));
-            _dataLoadTable.Columns.Add("Y Component", typeof(double));
+
             gcLoads.DataSource = _dataLoadTable;
         }
 
@@ -454,7 +675,7 @@ namespace FESolver
             {
                 Series series1 = new Series("Nodes", ViewType.Point);
                 PointSeriesView seriesView = (PointSeriesView)series1.View;
-                if (nodes.XDirection == eRestraintCondition.free)
+                if (nodes.XRestraint == eRestraint.Free)
                 {
                     seriesView.PointMarkerOptions.Kind = MarkerKind.Circle;
                     seriesView.Color = Color.Blue;
@@ -484,7 +705,7 @@ namespace FESolver
                 lineView.MarkerVisibility = DevExpress.Utils.DefaultBoolean.False;
                 //lineView.LineMarkerOptions.Size = 1;
                 //lineView.LineMarkerOptions.Kind = MarkerKind.Circle;
-                lineView.LineStyle.Thickness = 1;
+                lineView.LineStyle.Thickness = 2;
                 lineView.LineMarkerOptions.BorderColor = Color.Black;
                 lineView.LineMarkerOptions.BorderVisible = true;
                 series.ShowInLegend = false;
@@ -522,10 +743,11 @@ namespace FESolver
 
         private void BtnAddNode_Click(object sender, EventArgs e)
         {
-            //var Xcoord = Convert.ToDouble(txtNodeX.Text);
-            //var Ycoord = Convert.ToDouble(txtNodeY.Text);
-
-            //_nodesList.Add(new NodesInfo(Xcoord, Ycoord, ++_nodeCount));
+            var nodeId = Convert.ToInt32(txtNodeIDForNodes.Text);
+            var xCoord = Convert.ToDouble(txtNodeX.Text);
+            var yCoord = Convert.ToDouble(txtNodeY.Text);
+            _nodesList.Add(new TrussNode(nodeId, xCoord, yCoord));
+            txtNodeIDForNodes.EditValue = _nodeId++;
             AddNodesDataRows();
             drawChart();
             //CreateChart();
@@ -592,5 +814,5 @@ namespace FESolver
 
 
     }
-    
+
 }

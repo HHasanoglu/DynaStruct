@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.32929.386
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MainUI", "FESolver\MainUI.csproj", "{996FB13B-7939-493C-9B89-5C3766BC737C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MainUI", "MainUI.csproj", "{996FB13B-7939-493C-9B89-5C3766BC737C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Solver", "..\Solver\Solver.csproj", "{FFE8435A-B2F0-4AA2-8DDE-C0427EDF9693}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Solver", "..\..\Solver\Solver.csproj", "{FFE8435A-B2F0-4AA2-8DDE-C0427EDF9693}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -26,6 +26,6 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {44EE9582-F015-4122-BB9E-920D79F567AE}
+		SolutionGuid = {CE728E9B-0DA2-4B7A-A9E4-05D2638CA993}
 	EndGlobalSection
 EndGlobal

@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace Solver
 {
-    public enum eRestraintCondition
+    public enum eRestraint
     {
-        free,
-        restrained
+        Free,
+        Pinned
     }
 }

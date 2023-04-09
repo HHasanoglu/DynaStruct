@@ -174,8 +174,8 @@ namespace Solver
             foreach (TrussNode node in Nodes)
             {
                 var rowID = node.ID;
-                if (node.XDirection == eRestraintCondition.restrained) arr2d[rowID - 1, 0] = -1;
-                if (node.YDirection == eRestraintCondition.restrained) arr2d[rowID - 1, 1] = -1;
+                if (node.XRestraint == eRestraint.Pinned) arr2d[rowID - 1, 0] = -1;
+                if (node.YRestraint == eRestraint.Pinned) arr2d[rowID - 1, 1] = -1;
             }
             count = 0;
             for (int i = 0; i < Nodes.Count; i++)
