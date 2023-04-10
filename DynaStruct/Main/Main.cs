@@ -1,4 +1,6 @@
-﻿using DevExpress.XtraCharts;
+﻿using DevExpress.Utils;
+using DevExpress.XtraCharts;
+using DevExpress.XtraEditors;
 using DevExpress.XtraEditors.Repository;
 using DevExpress.XtraGrid;
 using DevExpress.XtraGrid.Columns;
@@ -35,7 +37,7 @@ namespace FESolver
             //_restrainedNodes = new List<RestrainedNode>();
             //_nodalForces = new List<PointLoad>();
 
-            //CreateExample3();
+            CreateExample1();
 
             prepareUI();
             setComboBoxItems();
@@ -45,8 +47,13 @@ namespace FESolver
             SetLoadTableColumns();
             EditNodeTableGridView();
             EditElementsTableGridView();
-            //EditBCTableGridView();
-            //EditLoadTableGridView();
+            txtNodeIDForNodes.EditValue = _nodesList.Count + 1;
+            PrepareDataSource();
+        }
+
+        private void PrepareDataSource()
+        {
+            AddNodesDataRows();
             drawChart();
         }
 
@@ -79,9 +86,12 @@ namespace FESolver
         private string _columnNameYRestaint = "yRestraint";
         private string _columnNameFx = "fx";
         private string _columnNameFy = "fy";
-        private bool _disableXrestraint=false;
-        private bool _disableYrestraint=false;
+        private bool _disableXrestraint = false;
+        private bool _disableYrestraint = false;
 
+        private RepositoryItemComboBox _combo= new RepositoryItemComboBox();
+        private int _selectedRowHandle;
+        private GridColumn _selectedGridColumn;
         #endregion
 
         #region Private Methods
@@ -91,96 +101,174 @@ namespace FESolver
             BtnAnalyze.Click += BtnAnalyze_Click;
             btnAddNode.Click += BtnAddNode_Click;
             gvNodes.CellValueChanged += GvNodes_CellValueChanged;
-            gvNodes.CustomRowCellEdit += GvNodes_CustomRowCellEdit;
+            gvNodes.FocusedColumnChanged += GvNodes_FocusedColumnChanged;
             gvNodes.RowCellStyle += GvNodes_RowCellStyle;
-            //btnAddElement.Click += BtnAddElement_Click;
-            //btnAddLoad.Click += BtnAddLoad_Click;
-            //btnAddRestrain.Click += BtnAddRestrain_Click;
-            //btnSolveTruss.Click += BtnSolveTruss_Click;
+            _combo.SelectedValueChanged += _combo_SelectedValueChanged;
+            chartDrawing.CustomDrawCrosshair += ChartDrawing_CustomDrawCrosshair;
             pictureBox1.Paint += canvasPictureBox_Paint;
             cmbResult.SelectedIndexChanged += CmbResult_SelectedIndexChanged;
+        }
+
+        private void ChartDrawing_CustomDrawCrosshair(object sender, CustomDrawCrosshairEventArgs e)
+        {
+            foreach (CrosshairElement element in e.CrosshairElements)
+            {
+                if (element.SeriesPoint != null)
+                {
+                    // get the value you want to display in the tooltip
+                    string customTooltip = $"Node : {_nodesList.FirstOrDefault(x=>x.Xcoord == element.SeriesPoint.NumericalArgument && x.Ycoord== element.SeriesPoint.Values[0]).ID}";
+                    // set the tooltip text
+                    element.LabelElement.Text = customTooltip;
+                }
+            }
+        }
+
+        private void Main_Load(object sender, EventArgs e)
+        {
+            chartDrawing.ToolTipController = new ToolTipController();
+        }
+
+        private void ChartDrawing_MouseMove(object sender, MouseEventArgs e)
+        {
+            //ChartHitInfo hitInfo = chartDrawing.CalcHitInfo(e.X, e.Y);
+            //if (hitInfo.SeriesPoint != null)
+            //{
+            //    chartDrawing.CrosshairEnabled = DefaultBoolean.True;
+            //    chartDrawing.CrosshairOptions.ShowOnlyInFocusedPane = true;
+            //    chartDrawing.CrosshairOptions.ShowArgumentLine = false;
+            //    chartDrawing.CrosshairOptions.ShowValueLine = false;
+            //    chartDrawing.CrosshairOptions.ShowValueLabels = true;
+            //    chartDrawing.CrosshairOptions.ShowArgumentLabels = false;
+            //    chartDrawing.Series[0].CrosshairLabelPattern = "Custom Text: {V:F2}";
+            //    chartDrawing.CrosshairOptions.GroupHeaderPattern = "Custom Group Header";
+            //    chartDrawing.CrosshairOptions.HighlightPoints=default;
+            //}
+            //else
+            //{
+            //    chartDrawing.CrosshairEnabled = false;
+            //}
+
+        }
+
+        private void GvNodes_FocusedColumnChanged(object sender, DevExpress.XtraGrid.Views.Base.FocusedColumnChangedEventArgs e)
+        {
+            //if (e.PrevFocusedColumn.FieldName == _columnNameXRestaint)
+            //{
+            //    if (_disableXrestraint)
+            //    {
+            //        e.RepositoryItem = new RepositoryItemTextEdit();
+            //        e.RepositoryItem.ReadOnly = true;
+            //    }
+            //    else
+            //    {
+            //        e.RepositoryItem = new RepositoryItemTextEdit();
+            //        e.RepositoryItem.ReadOnly = false;
+            //    }
+            //}
+
+            //if (e.Column.FieldName == _columnNameFy)
+            //{
+            //    if (_disableYrestraint)
+            //    {
+            //        e.RepositoryItem = new RepositoryItemTextEdit();
+            //        e.RepositoryItem.ReadOnly = true;
+            //    }
+            //    else
+            //    {
+            //        e.RepositoryItem = new RepositoryItemTextEdit();
+            //        e.RepositoryItem.ReadOnly = false;
+            //    }
+
+            //}
+        }
+
+        private void _combo_SelectedValueChanged(object sender, EventArgs e)
+        {
+            string selectedValue = ((ComboBoxEdit)sender).EditValue?.ToString();
+            if (!string.IsNullOrEmpty(selectedValue))
+            {
+                eRestraint myEnumValue = (eRestraint)Enum.Parse(typeof(eRestraint), selectedValue);
+                var node = (TrussNode)_nodesList[gvNodes.FocusedRowHandle];
+                if (gvNodes.FocusedColumn.FieldName==_columnNameXRestaint)
+                {
+                    node.XRestraint = myEnumValue;
+                    if (myEnumValue==eRestraint.Free)
+                    {
+                        gvNodes.SetRowCellValue(gvNodes.FocusedRowHandle, _columnNameFx, node.Fx);
+                    }
+                    else
+                    {
+                        gvNodes.SetRowCellValue(gvNodes.FocusedRowHandle, _columnNameFx, "?");
+                        _disableXrestraint = true;
+                    }
+                }
+                if (gvNodes.FocusedColumn.FieldName == _columnNameYRestaint)
+                {
+                    node.YRestraint = myEnumValue;
+                    if (myEnumValue == eRestraint.Free)
+                    {
+                        gvNodes.SetRowCellValue(gvNodes.FocusedRowHandle, _columnNameFy, node.Fy);
+                    }
+                    else
+                    {
+                        gvNodes.SetRowCellValue(gvNodes.FocusedRowHandle, _columnNameFy, "?");
+                        _disableYrestraint = true;
+                    }
+                }
+                   
+            }
+            
         }
 
         private void GvNodes_RowCellStyle(object sender, RowCellStyleEventArgs e)
         {
             if (_disableXrestraint && e.Column.FieldName == _columnNameFx)
             {
-                e.Appearance.BackColor = Color.LightGray;
+                //e.Appearance.BackColor = Color.LightGray;
+            }
+            else
+            {
+                //e.Appearance.ba;
             }
             if (_disableYrestraint && e.Column.FieldName == _columnNameFy)
             {
-                e.Appearance.BackColor = Color.LightGray;
-            }
-        }
-
-        private void GvNodes_CustomRowCellEdit(object sender, CustomRowCellEditEventArgs e)
-        {
-            if (_disableXrestraint && e.Column.FieldName ==_columnNameFx)
-            {
-                e.RepositoryItem = new RepositoryItemTextEdit();
-                e.RepositoryItem.ReadOnly = true;
-                gvNodes.SetRowCellValue(e.RowHandle, _columnNameFx, "?");
-            }
-            if (!_disableXrestraint && e.Column.FieldName == _columnNameFx)
-            {
-                e.RepositoryItem = new RepositoryItemTextEdit();
-                e.RepositoryItem.ReadOnly = false;
-            }
-
-            if (_disableYrestraint && e.Column.FieldName == _columnNameFy)
-            {
-                e.RepositoryItem = new RepositoryItemTextEdit();
-                e.RepositoryItem.ReadOnly = true;
-                gvNodes.SetRowCellValue(e.RowHandle, _columnNameFy, "?");
-
-            }
-            if (!_disableYrestraint && e.Column.FieldName == _columnNameFy)
-            {
-                e.RepositoryItem = new RepositoryItemTextEdit();
-                e.RepositoryItem.ReadOnly = false;
+                //e.Appearance.BackColor = Color.LightGray;
             }
         }
 
         private void GvNodes_CellValueChanged(object sender, DevExpress.XtraGrid.Views.Base.CellValueChangedEventArgs e)
         {
-            if (e.RowHandle != GridControl.InvalidRowHandle)
+            _selectedRowHandle = e.RowHandle;
+            if (_selectedRowHandle != GridControl.InvalidRowHandle)
             {
-                var node =(TrussNode)_nodesList[e.RowHandle];
-                node.Xcoord =(double)gvNodes.GetRowCellValue(e.RowHandle, _columnNameXcoord);
-                node.Ycoord =(double)gvNodes.GetRowCellValue(e.RowHandle, _columnNameYcoord);
-                if (e.Column.FieldName==_columnNameXRestaint )
+                var node = (TrussNode)_nodesList[_selectedRowHandle];
+                node.Ycoord = (double)gvNodes.GetRowCellValue(_selectedRowHandle, _columnNameYcoord);
+                node.Xcoord = (double)gvNodes.GetRowCellValue(_selectedRowHandle, _columnNameXcoord);
+                //node.XRestraint = (eRestraint)Enum.Parse(typeof(eRestraint), (string)gvNodes.GetRowCellValue(_selectedRowHandle, _columnNameXRestaint));
+                //node.YRestraint = (eRestraint)Enum.Parse(typeof(eRestraint), (string)gvNodes.GetRowCellValue(_selectedRowHandle, _columnNameYRestaint));
+                if (node.XRestraint == eRestraint.Free)
                 {
-                    node.XRestraint = (eRestraint)Enum.Parse(typeof(eRestraint), (string)gvNodes.GetRowCellValue(e.RowHandle, _columnNameXRestaint));
-                }
-                if (e.Column.FieldName == _columnNameYRestaint)
-                {
-                    node.YRestraint = (eRestraint)Enum.Parse(typeof(eRestraint), (string)gvNodes.GetRowCellValue(e.RowHandle, _columnNameYRestaint));
-                }
-                if (node.XRestraint==eRestraint.Free && _disableXrestraint && e.Column.FieldName == _columnNameXRestaint)
-                {
-                    node.Fx = Convert.ToDouble(gvNodes.GetRowCellValue(e.RowHandle, _columnNameFx));
                     _disableXrestraint = false;
+                    node.Fx = Convert.ToDouble(gvNodes.GetRowCellValue(_selectedRowHandle, _columnNameFx));
                 }
                 else
                 {
                     _disableXrestraint = true;
-
                 }
-                if (node.YRestraint==eRestraint.Free && _disableYrestraint&& e.Column.FieldName == _columnNameYRestaint)
+
+                //node.YRestraint = (eRestraint)Enum.Parse(typeof(eRestraint), (string)gvNodes.GetRowCellValue(_selectedRowHandle, _columnNameYRestaint));
+                if (node.YRestraint == eRestraint.Free)
                 {
-                    node.Fy =Convert.ToDouble(gvNodes.GetRowCellValue(e.RowHandle, _columnNameFy));
                     _disableYrestraint = false;
+                    node.Fy = Convert.ToDouble(gvNodes.GetRowCellValue(_selectedRowHandle, _columnNameFy));
                 }
                 else
                 {
                     _disableYrestraint = true;
-
                 }
-
-
-
-                
             }
+
+            PrepareDataSource();
         }
 
         private void CmbResult_SelectedIndexChanged(object sender, EventArgs e)
@@ -322,7 +410,7 @@ namespace FESolver
 
         }
 
-        private void AddDisplacementColorMapXDirection(eResultToShow type, int magnificationFactor = 300000000, int numPoints = 200)
+        private void AddDisplacementColorMapXDirection(eResultToShow type, int magnificationFactor = 100000000, int numPoints = 200)
         {
             // Create a scatter chart series
             var series = new Series("Intensity", ViewType.Point);
@@ -477,10 +565,9 @@ namespace FESolver
                 gvNodes.Columns[i].AppearanceCell.TextOptions.HAlignment = DevExpress.Utils.HorzAlignment.Center;
             }
             gvNodes.BestFitColumns();
-            RepositoryItemComboBox combo = new RepositoryItemComboBox();
-            combo.Items.AddRange(Enum.GetValues(typeof(eRestraint)).Cast<eRestraint>().Select(e => e.ToString()).ToArray());
-            gvNodes.Columns[_columnNameXRestaint].ColumnEdit = combo;
-            gvNodes.Columns[_columnNameYRestaint].ColumnEdit = combo;
+            _combo.Items.AddRange(Enum.GetValues(typeof(eRestraint)).Cast<eRestraint>().Select(e => e.ToString()).ToArray());
+            gvNodes.Columns[_columnNameXRestaint].ColumnEdit = _combo;
+            gvNodes.Columns[_columnNameYRestaint].ColumnEdit = _combo;
         }
 
         private void EditElementsTableGridView()
@@ -533,16 +620,32 @@ namespace FESolver
         {
             DataRow row;
             _dataNodeTable.Rows.Clear();
-            foreach (Node node in _nodesList)
+            foreach (TrussNode node in _nodesList)
             {
                 row = _dataNodeTable.NewRow();
                 row[_columnNameNodeId] = node.ID;
                 row[_columnNameXcoord] = node.Xcoord;
                 row[_columnNameYcoord] = node.Ycoord;
-                row[_columnNameXRestaint] = "Free";
-                row[_columnNameYRestaint] = "Free";
-                row[_columnNameFx] = 0;
-                row[_columnNameFy] = 0;
+                row[_columnNameXRestaint] = node.XRestraint;
+                row[_columnNameYRestaint] = node.YRestraint;
+                if (node.XRestraint == eRestraint.Pinned)//TODO make it inline if
+                {
+                    row[_columnNameFx] = "?";
+                }
+                else
+                {
+                    row[_columnNameFx] = node.Fx;
+                }
+
+                if (node.YRestraint == eRestraint.Pinned)//TODO make it inline if
+                {
+                    row[_columnNameFy] = "?";
+                }
+                else
+                {
+                    row[_columnNameFy] = node.Fy;
+                }
+
                 _dataNodeTable.Rows.Add(row);
             }
         }
@@ -629,6 +732,7 @@ namespace FESolver
 
         private void drawChart()
         {
+            chartDrawing.Series.Clear();
             // Add elements to the series
             AddElementsToSeries();
 
@@ -679,6 +783,7 @@ namespace FESolver
                 {
                     seriesView.PointMarkerOptions.Kind = MarkerKind.Circle;
                     seriesView.Color = Color.Blue;
+                    var point = new SeriesPoint(nodes.Xcoord, nodes.Ycoord);
                     series1.Points.Add(new SeriesPoint(nodes.Xcoord, nodes.Ycoord));
                 }
                 else
@@ -691,6 +796,11 @@ namespace FESolver
                 }
                 series1.ShowInLegend = false;
                 chartDrawing.Series.Add(series1);
+                chartDrawing.CrosshairOptions.ShowArgumentLine = false;
+                chartDrawing.CrosshairOptions.ShowValueLine = false;
+                chartDrawing.CrosshairOptions.ShowOnlyInFocusedPane = true;
+                chartDrawing.ToolTipEnabled = DefaultBoolean.True;
+                chartDrawing.CrosshairEnabled = DefaultBoolean.True;
             }
         }
 
@@ -709,6 +819,7 @@ namespace FESolver
                 lineView.LineMarkerOptions.BorderColor = Color.Black;
                 lineView.LineMarkerOptions.BorderVisible = true;
                 series.ShowInLegend = false;
+                series.CrosshairEnabled = DefaultBoolean.False;
                 chartDrawing.Series.Add(series);
                 series.View.Color = Color.LightGray;
             }
@@ -746,13 +857,10 @@ namespace FESolver
             var nodeId = Convert.ToInt32(txtNodeIDForNodes.Text);
             var xCoord = Convert.ToDouble(txtNodeX.Text);
             var yCoord = Convert.ToDouble(txtNodeY.Text);
-            _nodesList.Add(new TrussNode(nodeId, xCoord, yCoord));
-            txtNodeIDForNodes.EditValue = _nodeId++;
+            AddNode(nodeId, xCoord, yCoord);
+            txtNodeIDForNodes.EditValue = _nodesList.Count+1;
             AddNodesDataRows();
             drawChart();
-            //CreateChart();
-            //RefreshGraphics();
-            //drawingControl.Refresh();
         }
 
         private void BtnAddLoad_Click(object sender, EventArgs e)

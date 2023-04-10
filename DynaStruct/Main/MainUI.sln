@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MainUI", "MainUI.csproj", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Solver", "..\..\Solver\Solver.csproj", "{FFE8435A-B2F0-4AA2-8DDE-C0427EDF9693}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MainForm", "MainForm\MainForm.csproj", "{7A9FDD1D-ED7C-4BDA-9F19-6138F6E47DDA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{FFE8435A-B2F0-4AA2-8DDE-C0427EDF9693}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FFE8435A-B2F0-4AA2-8DDE-C0427EDF9693}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FFE8435A-B2F0-4AA2-8DDE-C0427EDF9693}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7A9FDD1D-ED7C-4BDA-9F19-6138F6E47DDA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7A9FDD1D-ED7C-4BDA-9F19-6138F6E47DDA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7A9FDD1D-ED7C-4BDA-9F19-6138F6E47DDA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7A9FDD1D-ED7C-4BDA-9F19-6138F6E47DDA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
