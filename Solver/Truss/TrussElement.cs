@@ -11,9 +11,9 @@ namespace Solver
     {
         #region Ctor
 
-        public TrussElement(string memberLabel, Node NodeI, Node NodeJ, double E, double A)
+        public TrussElement(int memberLabel, Node NodeI, Node NodeJ, double E, double A)
         {
-            _memberlabel = memberLabel;
+            _Id = memberLabel;
             _nodeI = NodeI;
             _nodeJ = NodeJ;
             _E = E;
@@ -27,7 +27,7 @@ namespace Solver
 
         #region Private Fields
 
-        private string _memberlabel;
+        private int _Id;
         private Node _nodeI;
         private Node _nodeJ;
         private double _A;
@@ -57,10 +57,10 @@ namespace Solver
         public double A { get => _A; set => _A = value; }
         public double E { get => _E; set => _E = value; }
         public double L { get => _L; set => _L = value; }
-        public double Theta { get => 180 / Math.PI * _theta; set => _theta = value; }
+        public double Angle { get => 180 / Math.PI * _theta; set => _theta = value; }
         public Node NodeI { get => _nodeI; set => _nodeI = value; }
         public Node NodeJ { get => _nodeJ; set => _nodeJ = value; }
-        public string Memberlabel { get => _memberlabel; set => _memberlabel = value; }
+        public int ID { get => _Id; set => _Id = value; }
 
         #endregion
 
