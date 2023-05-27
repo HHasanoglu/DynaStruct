@@ -37,7 +37,7 @@ namespace FORMSUI
             //_restrainedNodes = new List<RestrainedNode>();
             //_nodalForces = new List<PointLoad>();
 
-            CreateExample3();
+            CreateExample1();
 
             prepareUI();
             setComboBoxItems();
@@ -49,8 +49,8 @@ namespace FORMSUI
             txtNodeIDForNodes.EditValue = _nodesList.Count + 1;
             PrepareDataSource();
             scaleSlider.Properties.Minimum = 0;
-            scaleSlider.Properties.Maximum = 5;
-            _scale = 200000000;
+            scaleSlider.Properties.Maximum = 10;
+            _scale = _initialScale;
         }
 
         private void PrepareDataSource()
@@ -81,6 +81,7 @@ namespace FORMSUI
         private DataTable _dataBoundaryConditionsTable;
         private DataTable _dataLoadTable;
         private int _nodeId;
+        private string _strFormat = "#0.#";
         //private List<RestrainedNode> _restrainedNodes;
         //private List<PointLoad> _nodalForces;
 
@@ -91,6 +92,8 @@ namespace FORMSUI
         private string _columnNameYRestaint = "yRestraint";
         private string _columnNameFx = "fx";
         private string _columnNameFy = "fy";
+        private string _columnNameDispX = "Dispx";
+        private string _columnNameDispY = "Dispy";
         private bool _disableXrestraint = false;
         private bool _disableYrestraint = false;
 
@@ -99,6 +102,7 @@ namespace FORMSUI
         private string _columnNameElementNodeJ = "ElementNodeJ";
         private string _columnNameElementModulus = "ElementModulus";
         private string _columnNameElementSectionArea = "ElementSecrionArea";
+        private string _columnNameAxialLoad = "ElementAxialLoad";
         private string _columnNameElementSectionLength = "ElementSecrionLength";
         private string _columnNameElementSectionAngle = "ElementSecrionAngle";
 
@@ -111,6 +115,7 @@ namespace FORMSUI
         private RepositoryItemComboBox _combo = new RepositoryItemComboBox();
         private int _selectedRowHandle;
         private GridColumn _selectedGridColumn;
+        private int _initialScale;
         #endregion
 
         #region Private Methods
@@ -133,9 +138,10 @@ namespace FORMSUI
 
         private void ScaleSlider_ValueChanged(object sender, EventArgs e)
         {
-            var value = (double)scaleSlider.Value;
+            _scale = _initialScale;
+            var value = (double)scaleSlider.Value*10000000;
 
-            _scale += (int)(value / 10 * _scale);
+            _scale += (int)(value);
             updateColorBarValues();
         }
 
@@ -337,6 +343,8 @@ namespace FORMSUI
             Assembler assembler = new Assembler(_TrussElementsList, _nodesList);
             _isAnalyzed = true;
             updateColorBarValues();
+            AddNodesDataRows();
+            AddElementsDataRows();
         }
 
         private void CreateExample1()
@@ -463,14 +471,12 @@ namespace FORMSUI
         }
 
 
-        private void AddDisplacementColorMapXDirection(eResultToShow type, int magnificationFactor = 100000000, int numPoints = 5)
+        private void AddDisplacementColorMapXDirection(eResultToShow type, int magnificationFactor = 100000000, int numPoints = 300)
         {
             // Create a scatter chart series
             var series = new Series("Intensity", ViewType.Point);
-            if (chartDrawing.Series["Intensity"] != null)
-            {
-                chartDrawing.Series["Intensity"].Points.Clear();
-            }
+            var seriesToClear = chartDrawing.GetSeriesByName("Intensity");
+            chartDrawing.Series.Remove(seriesToClear);
 
             PointSeriesView seriesView = (PointSeriesView)series.View;
 
@@ -619,12 +625,16 @@ namespace FORMSUI
             gvElements.OptionsMenu.EnableColumnMenu = false;
             gvElements.OptionsView.ShowIndicator = false;
             gvElements.OptionsView.AllowHtmlDrawHeaders = true;
-            gvElements.Columns[0].AppearanceHeader.TextOptions.HAlignment = DevExpress.Utils.HorzAlignment.Near;
-            gvElements.Columns[1].AppearanceHeader.TextOptions.HAlignment = DevExpress.Utils.HorzAlignment.Center;
-            gvElements.Columns[2].AppearanceHeader.TextOptions.HAlignment = DevExpress.Utils.HorzAlignment.Center;
-            gvElements.Columns[0].AppearanceCell.TextOptions.HAlignment = DevExpress.Utils.HorzAlignment.Near;
-            gvElements.Columns[1].AppearanceCell.TextOptions.HAlignment = DevExpress.Utils.HorzAlignment.Center;
-            gvElements.Columns[2].AppearanceCell.TextOptions.HAlignment = DevExpress.Utils.HorzAlignment.Center;
+            foreach (GridColumn column in gvElements.Columns)
+            {
+                column.AppearanceCell.TextOptions.HAlignment = HorzAlignment.Center;
+            }
+            gvElements.Columns[0].AppearanceHeader.TextOptions.HAlignment = HorzAlignment.Near;
+            gvElements.Columns[1].AppearanceHeader.TextOptions.HAlignment = HorzAlignment.Center;
+            gvElements.Columns[2].AppearanceHeader.TextOptions.HAlignment = HorzAlignment.Center;
+            gvElements.Columns[0].AppearanceCell.TextOptions.HAlignment = HorzAlignment.Near;
+            gvElements.Columns[1].AppearanceCell.TextOptions.HAlignment = HorzAlignment.Center;
+            gvElements.Columns[2].AppearanceCell.TextOptions.HAlignment = HorzAlignment.Center;
         }
 
         private void EditBCTableGridView()
@@ -640,58 +650,6 @@ namespace FORMSUI
             //gvBoundaryCondition.Columns[1].AppearanceHeader.TextOptions.HAlignment = DevExpress.Utils.HorzAlignment.Center;
             //gvBoundaryCondition.Columns[0].AppearanceCell.TextOptions.HAlignment = DevExpress.Utils.HorzAlignment.Near;
             //gvBoundaryCondition.Columns[1].AppearanceCell.TextOptions.HAlignment = DevExpress.Utils.HorzAlignment.Center;
-        }
-
-        private void AddNodesDataRows()
-        {
-            DataRow row;
-            _dataNodeTable.Rows.Clear();
-            foreach (TrussNode node in _nodesList)
-            {
-                row = _dataNodeTable.NewRow();
-                row[_columnNameNodeId] = node.ID;
-                row[_columnNameXcoord] = node.Xcoord;
-                row[_columnNameYcoord] = node.Ycoord;
-                row[_columnNameXRestaint] = node.XRestraint;
-                row[_columnNameYRestaint] = node.YRestraint;
-                if (node.XRestraint == eRestraint.Pinned)//TODO make it inline if
-                {
-                    row[_columnNameFx] = "?";
-                }
-                else
-                {
-                    row[_columnNameFx] = node.Fx;
-                }
-
-                if (node.YRestraint == eRestraint.Pinned)//TODO make it inline if
-                {
-                    row[_columnNameFy] = "?";
-                }
-                else
-                {
-                    row[_columnNameFy] = node.Fy;
-                }
-
-                _dataNodeTable.Rows.Add(row);
-            }
-        }
-
-        private void AddElementsDataRows()
-        {
-            DataRow row;
-            _dataTrussElementsTable.Rows.Clear();
-            foreach (TrussElement elemnent in _TrussElementsList)
-            {
-                row = _dataTrussElementsTable.NewRow();
-                row[_columnNameElementId] = elemnent.ID;
-                row[_columnNameElementNodeI] = elemnent.NodeI.ID;
-                row[_columnNameElementNodeJ] = elemnent.NodeJ.ID;
-                row[_columnNameElementSectionLength] = elemnent.L.ToString("#0.#");
-                row[_columnNameElementSectionAngle] = elemnent.Angle.ToString("#0.#");
-                row[_columnNameElementModulus] = elemnent.E.ToString("E3");
-                row[_columnNameElementSectionArea] = elemnent.A.ToString("#0.#");
-                _dataTrussElementsTable.Rows.Add(row);
-            }
         }
 
         private void AddLoadsDataRows()
@@ -728,9 +686,71 @@ namespace FORMSUI
             _dataNodeTable.Columns.Add(new DataColumn() { ColumnName = _columnNameYcoord, DataType = typeof(double), Caption = "Y-Coord" });
             _dataNodeTable.Columns.Add(new DataColumn() { ColumnName = _columnNameXRestaint, DataType = typeof(string), Caption = "X-Restraint" });
             _dataNodeTable.Columns.Add(new DataColumn() { ColumnName = _columnNameYRestaint, DataType = typeof(string), Caption = "Y-Restraint" });
-            _dataNodeTable.Columns.Add(new DataColumn() { ColumnName = _columnNameFx, DataType = typeof(string), Caption = "Fx" });
-            _dataNodeTable.Columns.Add(new DataColumn() { ColumnName = _columnNameFy, DataType = typeof(string), Caption = "Fy" });
+            _dataNodeTable.Columns.Add(new DataColumn() { ColumnName = _columnNameFx, DataType = typeof(string), Caption = "Fx (N)" });
+            _dataNodeTable.Columns.Add(new DataColumn() { ColumnName = _columnNameFy, DataType = typeof(string), Caption = "Fy (N)" });
+            _dataNodeTable.Columns.Add(new DataColumn() { ColumnName = _columnNameDispX, DataType = typeof(string), Caption = "Disp-X (mm)" });
+            _dataNodeTable.Columns.Add(new DataColumn() { ColumnName = _columnNameDispY, DataType = typeof(string), Caption = "Disp-Y (mm)" });
             gcNodes.DataSource = _dataNodeTable;
+        }
+        private void AddNodesDataRows()
+        {
+            DataRow row;
+            _dataNodeTable.Rows.Clear();
+            foreach (TrussNode node in _nodesList)
+            {
+                row = _dataNodeTable.NewRow();
+                row[_columnNameNodeId] = node.ID;
+                row[_columnNameXcoord] = node.Xcoord;
+                row[_columnNameYcoord] = node.Ycoord;
+                row[_columnNameXRestaint] = node.XRestraint;
+                row[_columnNameYRestaint] = node.YRestraint;
+                if (node.XRestraint == eRestraint.Pinned)//TODO make it inline if
+                {
+                    row[_columnNameFx] = "?";
+                }
+                else
+                {
+                    row[_columnNameFx] = node.Fx;
+                }
+
+                if (node.YRestraint == eRestraint.Pinned)//TODO make it inline if
+                {
+                    row[_columnNameFy] = "?";
+                }
+                else
+                {
+                    row[_columnNameFy] = node.Fy;
+                }
+                if (_isAnalyzed)
+                {
+                    if (node.XRestraint== eRestraint.Pinned)
+                    {
+                        row[_columnNameDispX] = node.Dispx.ToString(_strFormat);
+                    }
+                    else
+                    {
+                        row[_columnNameDispX] = node.Dispx.ToString("E2");
+                    }
+
+                    if (node.YRestraint == eRestraint.Pinned)
+                    {
+                        row[_columnNameDispY] = node.Dispx.ToString(_strFormat);
+                    }
+                    else
+                    {
+                        row[_columnNameDispY] = node.Dispy.ToString("E2");
+                    }
+                }
+                else
+                {
+
+                    row[_columnNameDispX] = "?";
+                    row[_columnNameDispY] = "?";
+                }
+
+
+                _dataNodeTable.Rows.Add(row);
+            }
         }
 
         private void SetElementsTableColumns()
@@ -739,11 +759,40 @@ namespace FORMSUI
             _dataTrussElementsTable.Columns.Add(new DataColumn() { ColumnName = _columnNameElementId, DataType = typeof(int), Caption = "Element ID" });
             _dataTrussElementsTable.Columns.Add(new DataColumn() { ColumnName = _columnNameElementNodeI, DataType = typeof(int), Caption = "Start NodeID" });
             _dataTrussElementsTable.Columns.Add(new DataColumn() { ColumnName = _columnNameElementNodeJ, DataType = typeof(int), Caption = "End NodeID" });
-            _dataTrussElementsTable.Columns.Add(new DataColumn() { ColumnName = _columnNameElementSectionLength, DataType = typeof(double), Caption = "Length" });
+            _dataTrussElementsTable.Columns.Add(new DataColumn() { ColumnName = _columnNameElementSectionLength, DataType = typeof(double), Caption = $"Length (mm)" });
             _dataTrussElementsTable.Columns.Add(new DataColumn() { ColumnName = _columnNameElementSectionAngle, DataType = typeof(double), Caption = "Angle" });
-            _dataTrussElementsTable.Columns.Add(new DataColumn() { ColumnName = _columnNameElementModulus, DataType = typeof(string), Caption = "E" });
-            _dataTrussElementsTable.Columns.Add(new DataColumn() { ColumnName = _columnNameElementSectionArea, DataType = typeof(double), Caption = "Area" });
+            _dataTrussElementsTable.Columns.Add(new DataColumn() { ColumnName = _columnNameElementModulus, DataType = typeof(string), Caption = "E (N/mm^2)" });
+            _dataTrussElementsTable.Columns.Add(new DataColumn() { ColumnName = _columnNameElementSectionArea, DataType = typeof(double), Caption = "Area (mm^2)" });
+            _dataTrussElementsTable.Columns.Add(new DataColumn() { ColumnName = _columnNameAxialLoad, DataType = typeof(string), Caption = "AxialForce (N)" });
             gcElements.DataSource = _dataTrussElementsTable;
+        }
+
+        private void AddElementsDataRows()
+        {
+            DataRow row;
+            _dataTrussElementsTable.Rows.Clear();
+            foreach (TrussElement elemnent in _TrussElementsList)
+            {
+                row = _dataTrussElementsTable.NewRow();
+                row[_columnNameElementId] = elemnent.ID;
+                row[_columnNameElementNodeI] = elemnent.NodeI.ID;
+                row[_columnNameElementNodeJ] = elemnent.NodeJ.ID;
+                row[_columnNameElementSectionLength] = elemnent.L.ToString(_strFormat);
+                row[_columnNameElementSectionAngle] = elemnent.Angle.ToString(_strFormat);
+                row[_columnNameElementModulus] = elemnent.E.ToString("E2");
+                row[_columnNameElementSectionArea] = elemnent.A.ToString(_strFormat);
+                row[_columnNameAxialLoad] = elemnent.IEndForce.ToString(_strFormat);
+                if (_isAnalyzed)
+                {
+
+                    row[_columnNameAxialLoad] = elemnent.IEndForce.ToString(_strFormat);
+                }
+                else
+                {
+                    row[_columnNameAxialLoad] = "?";
+                }
+                _dataTrussElementsTable.Rows.Add(row);
+            }
         }
         private void SetBCTableColumns()
         {

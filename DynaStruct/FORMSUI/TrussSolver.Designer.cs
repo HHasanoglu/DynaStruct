@@ -65,7 +65,8 @@ namespace FORMSUI
             this.label13 = new System.Windows.Forms.Label();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.chartDrawing = new DevExpress.XtraCharts.ChartControl();
-            this.scaleSlider = new DevExpress.XtraEditors.TrackBarControl();
+            this.labelControl1 = new DevExpress.XtraEditors.LabelControl();
+            this.scaleSlider = new DevExpress.XtraEditors.ZoomTrackBarControl();
             ((System.ComponentModel.ISupportInitialize)(this.ribbonControl1)).BeginInit();
             this.groupBox2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.txtMemberLabel.Properties)).BeginInit();
@@ -157,9 +158,9 @@ namespace FORMSUI
             this.groupBox2.Controls.Add(this.txtNodeI);
             this.groupBox2.Controls.Add(this.label4);
             this.groupBox2.Controls.Add(this.label5);
-            this.groupBox2.Location = new System.Drawing.Point(580, 164);
+            this.groupBox2.Location = new System.Drawing.Point(640, 164);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(563, 292);
+            this.groupBox2.Size = new System.Drawing.Size(635, 292);
             this.groupBox2.TabIndex = 45;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Elements Information";
@@ -184,11 +185,11 @@ namespace FORMSUI
             // 
             // gcElements
             // 
-            this.gcElements.Location = new System.Drawing.Point(6, 85);
+            this.gcElements.Location = new System.Drawing.Point(0, 85);
             this.gcElements.MainView = this.gvElements;
             this.gcElements.MenuManager = this.ribbonControl1;
             this.gcElements.Name = "gcElements";
-            this.gcElements.Size = new System.Drawing.Size(550, 200);
+            this.gcElements.Size = new System.Drawing.Size(635, 206);
             this.gcElements.TabIndex = 50;
             this.gcElements.ViewCollection.AddRange(new DevExpress.XtraGrid.Views.Base.BaseView[] {
             this.gvElements});
@@ -282,17 +283,17 @@ namespace FORMSUI
             // 
             this.cmbResult.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.cmbResult.FormattingEnabled = true;
-            this.cmbResult.Location = new System.Drawing.Point(1146, 522);
+            this.cmbResult.Location = new System.Drawing.Point(1177, 505);
             this.cmbResult.Name = "cmbResult";
-            this.cmbResult.Size = new System.Drawing.Size(89, 21);
+            this.cmbResult.Size = new System.Drawing.Size(98, 21);
             this.cmbResult.TabIndex = 34;
             // 
             // BtnAnalyze
             // 
             this.BtnAnalyze.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.BtnAnalyze.Location = new System.Drawing.Point(1146, 462);
+            this.BtnAnalyze.Location = new System.Drawing.Point(1177, 462);
             this.BtnAnalyze.Name = "BtnAnalyze";
-            this.BtnAnalyze.Size = new System.Drawing.Size(130, 42);
+            this.BtnAnalyze.Size = new System.Drawing.Size(98, 37);
             this.BtnAnalyze.TabIndex = 4;
             this.BtnAnalyze.Text = "Analyze";
             // 
@@ -308,18 +309,18 @@ namespace FORMSUI
             this.groupBox3.Controls.Add(this.label13);
             this.groupBox3.Location = new System.Drawing.Point(12, 164);
             this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(562, 292);
+            this.groupBox3.Size = new System.Drawing.Size(622, 292);
             this.groupBox3.TabIndex = 44;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Nodes Information";
             // 
             // gcNodes
             // 
-            this.gcNodes.Location = new System.Drawing.Point(6, 85);
+            this.gcNodes.Location = new System.Drawing.Point(1, 85);
             this.gcNodes.MainView = this.gvNodes;
             this.gcNodes.MenuManager = this.ribbonControl1;
             this.gcNodes.Name = "gcNodes";
-            this.gcNodes.Size = new System.Drawing.Size(550, 200);
+            this.gcNodes.Size = new System.Drawing.Size(621, 206);
             this.gcNodes.TabIndex = 44;
             this.gcNodes.ViewCollection.AddRange(new DevExpress.XtraGrid.Views.Base.BaseView[] {
             this.gvNodes});
@@ -412,15 +413,23 @@ namespace FORMSUI
             this.chartDrawing.Size = new System.Drawing.Size(1016, 312);
             this.chartDrawing.TabIndex = 46;
             // 
+            // labelControl1
+            // 
+            this.labelControl1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.labelControl1.Location = new System.Drawing.Point(1142, 532);
+            this.labelControl1.Name = "labelControl1";
+            this.labelControl1.Size = new System.Drawing.Size(25, 13);
+            this.labelControl1.TabIndex = 52;
+            this.labelControl1.Text = "Scale";
+            // 
             // scaleSlider
             // 
-            this.scaleSlider.Location = new System.Drawing.Point(1146, 568);
+            this.scaleSlider.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.scaleSlider.Location = new System.Drawing.Point(1177, 532);
             this.scaleSlider.MenuManager = this.ribbonControl1;
             this.scaleSlider.Name = "scaleSlider";
-            this.scaleSlider.Properties.LabelAppearance.Options.UseTextOptions = true;
-            this.scaleSlider.Properties.LabelAppearance.TextOptions.HAlignment = DevExpress.Utils.HorzAlignment.Center;
-            this.scaleSlider.Size = new System.Drawing.Size(111, 45);
-            this.scaleSlider.TabIndex = 49;
+            this.scaleSlider.Size = new System.Drawing.Size(104, 18);
+            this.scaleSlider.TabIndex = 53;
             // 
             // TrussSolver
             // 
@@ -428,6 +437,7 @@ namespace FORMSUI
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1288, 804);
             this.Controls.Add(this.scaleSlider);
+            this.Controls.Add(this.labelControl1);
             this.Controls.Add(this.chartDrawing);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox3);
@@ -504,6 +514,7 @@ namespace FORMSUI
         private DevExpress.XtraBars.BarButtonItem barButtonItem1;
         private DevExpress.XtraEditors.TextEdit txtMemberLabel;
         private System.Windows.Forms.Label label1;
-        private DevExpress.XtraEditors.TrackBarControl scaleSlider;
+        private DevExpress.XtraEditors.LabelControl labelControl1;
+        private DevExpress.XtraEditors.ZoomTrackBarControl scaleSlider;
     }
 }
