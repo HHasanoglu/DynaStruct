@@ -37,6 +37,8 @@ namespace Solver
         public double Dispx { get => _dispx; set => _dispx = value; }
         public double Dispy { get => _dispy; set => _dispy = value; }
 
+        public double Dispxy { get=>Math.Sqrt(Math.Pow(_dispx,2)+Math.Pow(_dispy,2)); }
+
         public double getXcoordFinal(int maginifactionFactor = 100)
         {
             return _xcoord + maginifactionFactor * _dispx;

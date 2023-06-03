@@ -21,6 +21,7 @@ namespace FORMSUI
     {
         Dispx,
         Dispy,
+        Dispxy,
         stress,
         strain
     }
@@ -37,7 +38,7 @@ namespace FORMSUI
             //_restrainedNodes = new List<RestrainedNode>();
             //_nodalForces = new List<PointLoad>();
 
-            CreateExample1();
+            CreateExample4();
 
             prepareUI();
             setComboBoxItems();
@@ -65,6 +66,7 @@ namespace FORMSUI
         {
             cmbResult.Items.Add(eResultToShow.Dispx);
             cmbResult.Items.Add(eResultToShow.Dispy);
+            cmbResult.Items.Add(eResultToShow.Dispxy);
             cmbResult.Items.Add(eResultToShow.strain);
             cmbResult.Items.Add(eResultToShow.stress);
             cmbResult.SelectedItem = eResultToShow.Dispx;
@@ -139,7 +141,7 @@ namespace FORMSUI
         private void ScaleSlider_ValueChanged(object sender, EventArgs e)
         {
             _scale = _initialScale;
-            var value = (double)scaleSlider.Value*10000000;
+            var value = (double)scaleSlider.Value * 10000000;
 
             _scale += (int)(value);
             updateColorBarValues();
@@ -147,8 +149,9 @@ namespace FORMSUI
 
         private void TrussSolver_Resize(object sender, EventArgs e)
         {
+            AddNodesDataRows();
+            AddElementsDataRows();
             updateColorBarValues();
-
         }
 
         private void BtnAddElement_Click(object sender, EventArgs e)
@@ -370,7 +373,6 @@ namespace FORMSUI
             AddLoad(1, 0, -200000);
 
         }
-
         private void CreateExample2()
         {
             AddNode(1, 0, 0);
@@ -422,6 +424,75 @@ namespace FORMSUI
             AddLoad(2, 0, -10000);
             AddLoad(3, 0, -30000);
             AddLoad(4, 0, -5000);
+        }
+        private void CreateExample4()
+        {
+            var E = 200 * Math.Pow(10, 9);
+            var A = 5000;
+            int node = 0;
+            AddNode(++node, 0, 0);
+            AddNode(++node, 10, 10);
+            AddNode(++node, 20, 8.333);
+            AddNode(++node, 30, 6.667);
+            AddNode(++node, 40, 5);
+            AddNode(++node, 50, 3.333);
+            AddNode(++node, 60, 1.667);
+            AddNode(++node, 70, 3.333);
+            AddNode(++node, 80, 1.667);
+            AddNode(++node, 90, 3.333);
+            AddNode(++node, 100, 5);
+            AddNode(++node, 110, 6.667);
+            AddNode(++node, 120, 8.333);
+            AddNode(++node, 130, 10);
+            AddNode(++node, 140, 0);
+            AddNode(++node, 130, 0);
+            AddNode(++node, 120, 0);
+            AddNode(++node, 110, 0);
+            AddNode(++node, 100, 0);
+            AddNode(++node, 90, 0);
+            AddNode(++node, 80, 0);
+            AddNode(++node, 70, 0);
+            AddNode(++node, 60, 0);
+            AddNode(++node, 50, 0);
+            AddNode(++node, 40, 0);
+            AddNode(++node, 30, 0);
+            AddNode(++node, 20, 0);
+            AddNode(++node, 10, 0);
+            int member = 0;
+            for (int i = 1; i <= 27; i++)
+            {
+                AddMember(++member, i, i + 1, E, A);
+            }
+            int end = 28;
+            for (int i = 2; i <= 14; i++)
+            {
+                AddMember(member, i, end, E, A);
+                member++;
+                end--;
+            }
+
+            AddMember(++member, 3, 28, E, A);
+            AddMember(++member, 4, 27, E, A);
+            AddMember(++member, 5, 26, E, A);
+            AddMember(++member, 6, 25, E, A);
+            AddMember(++member, 7, 24, E, A);
+            AddMember(++member, 7, 22, E, A);
+            AddMember(++member, 9, 22, E, A);
+            AddMember(++member, 9, 20, E, A);
+            AddMember(++member, 10, 19, E, A);
+            AddMember(++member, 11, 18, E, A);
+            AddMember(++member, 12, 17, E, A);
+            AddMember(++member, 13, 16, E, A);
+
+            AddRestrainedNode(1, true, true);
+            AddRestrainedNode(15, true, true);
+            AddRestrainedNode(16, true, true);
+            AddRestrainedNode(28, true, true);
+            for (int i = 17; i <= 27; i++)
+            {
+                AddLoad(i, 0, -40000);
+            }
+
         }
 
         private void AddLoad(int nodeId, double fx, double fy)
@@ -480,7 +551,7 @@ namespace FORMSUI
 
             PointSeriesView seriesView = (PointSeriesView)series.View;
 
-            GetCoordinates(magnificationFactor, numPoints, out List<double> xcoordList, out List<double> ycoordList);
+            GetCoordinates(type,magnificationFactor, numPoints, out List<double> xcoordList, out List<double> ycoordList);
 
             List<double> intensities = GetIntesities(numPoints, type);
 
@@ -489,7 +560,7 @@ namespace FORMSUI
             chartDrawing.Series.Add(series);
         }
 
-        private void GetCoordinates(int magnificationFactor, int numPoints, out List<double> xcoordList, out List<double> ycoordList)
+        private void GetCoordinates(eResultToShow type, int magnificationFactor, int numPoints, out List<double> xcoordList, out List<double> ycoordList)
         {
             xcoordList = new List<double>();
             ycoordList = new List<double>();
@@ -498,14 +569,21 @@ namespace FORMSUI
                 //var element = _TrussElementsList.First();
                 var NodeI = (TrussNode)element.NodeI;
                 var NodeJ = (TrussNode)element.NodeJ;
-                var x1 = NodeI.getXcoordFinal(magnificationFactor);
-                var y1 = NodeI.getYcoordFinal(magnificationFactor);
-                var x2 = NodeJ.getXcoordFinal(magnificationFactor);
-                var y2 = NodeJ.getYcoordFinal(magnificationFactor);
-                //var series1 = new Series("Intensity", ViewType.Line);
-                //series1.Points.Add(new SeriesPoint(x1, y1));
-                //series1.Points.Add(new SeriesPoint(x2, y2));
-                //chartDrawing.Series.Add(series1);
+                double x1 = NodeI.Xcoord;
+                double x2 = NodeJ.Xcoord;
+                double y1 = NodeI.Ycoord;
+                double y2 = NodeJ.Ycoord;
+                if (type == eResultToShow.Dispx || type == eResultToShow.Dispxy)
+                {
+                    x1 = NodeI.getXcoordFinal(magnificationFactor);
+                    x2 = NodeJ.getXcoordFinal(magnificationFactor);
+                }
+
+                if (type == eResultToShow.Dispy || type == eResultToShow.Dispxy)
+                {
+                    y1 = NodeI.getYcoordFinal(magnificationFactor);
+                    y2 = NodeJ.getYcoordFinal(magnificationFactor);
+                }
 
                 xcoordList.AddRange(Enumerable.Range(0, numPoints).Select(i => x1 + i * (x2 - x1) / (numPoints - 1.0)));
                 ycoordList.AddRange(Enumerable.Range(0, numPoints).Select(i => y1 + i * (y2 - y1) / (numPoints - 1.0)));
@@ -538,7 +616,10 @@ namespace FORMSUI
                     _minVal = _nodesList.Cast<TrussNode>().Min(x => Math.Abs(x.Dispy));
                     _maxVal = _nodesList.Cast<TrussNode>().Max(x => Math.Abs(x.Dispy));
                     break;
-
+                case eResultToShow.Dispxy:
+                    _minVal = _nodesList.Cast<TrussNode>().Min(x => Math.Abs(x.Dispxy));
+                    _maxVal = _nodesList.Cast<TrussNode>().Max(x => Math.Abs(x.Dispxy));
+                    break;
                 default:
                     _minVal = _nodesList.Cast<TrussNode>().Min(x => Math.Abs(x.Dispy));
                     _maxVal = _nodesList.Cast<TrussNode>().Max(x => Math.Abs(x.Dispy));
@@ -573,12 +654,12 @@ namespace FORMSUI
                     start = NodeI.Dispy;
                     End = NodeJ.Dispy;
                     break;
-                case eResultToShow.stress:
-                    start = NodeI.Dispx; //TODO
-                    End = NodeJ.Dispx;
+                case eResultToShow.Dispxy:
+                    start = NodeI.Dispxy;
+                    End = NodeJ.Dispxy;
                     break;
                 case eResultToShow.strain:
-                    start = NodeI.Dispx; //TODO
+                    start = NodeI.Dispx;
                     End = NodeJ.Dispx;
                     break;
                 default:
@@ -704,7 +785,7 @@ namespace FORMSUI
                 row[_columnNameYcoord] = node.Ycoord;
                 row[_columnNameXRestaint] = node.XRestraint;
                 row[_columnNameYRestaint] = node.YRestraint;
-                if (node.XRestraint == eRestraint.Pinned)//TODO make it inline if
+                if (node.XRestraint == eRestraint.Pinned && !_isAnalyzed)//TODO make it inline if
                 {
                     row[_columnNameFx] = "?";
                 }
@@ -723,7 +804,7 @@ namespace FORMSUI
                 }
                 if (_isAnalyzed)
                 {
-                    if (node.XRestraint== eRestraint.Pinned)
+                    if (node.XRestraint == eRestraint.Pinned)
                     {
                         row[_columnNameDispX] = node.Dispx.ToString(_strFormat);
                     }
@@ -794,6 +875,7 @@ namespace FORMSUI
                 _dataTrussElementsTable.Rows.Add(row);
             }
         }
+
         private void SetBCTableColumns()
         {
             //_dataBoundaryConditionsTable = new DataTable();
@@ -811,6 +893,165 @@ namespace FORMSUI
             // Add nodes to the series
             AddNodesToSeries();
 
+            // Add Loading Info to the chart
+            DrawLoadingInfo();
+
+        }
+
+        private void DrawLoadingInfo()
+        {
+            foreach (var node in _nodesList)
+            {
+                var castedNode = (TrussNode)node;
+                Series series = new Series(castedNode.ID.ToString(), ViewType.Line);
+                Series seriespoint = new Series("", ViewType.Point);
+
+                if (castedNode.Fx != 0)
+                {
+                    if (castedNode.Fx < 0)
+                    {
+                        drawArrowLeft(castedNode.Xcoord, castedNode.Ycoord);
+                    }
+                    else
+                    {
+                        drawArrowRight(castedNode.Xcoord, castedNode.Ycoord);
+                    }
+                }
+                if (castedNode.Fy != 0)
+                {
+                    if (castedNode.Fy < 0)
+                    {
+                        drawArrowDown(castedNode.Xcoord, castedNode.Ycoord);
+                    }
+                    else
+                    {
+                        drawArrowUp(castedNode.Xcoord, castedNode.Ycoord);
+                    }
+                }
+
+
+                LineSeriesView lineView = (LineSeriesView)series.View;
+                //lineView.MarkerVisibility = DevExpress.Utils.DefaultBoolean.True;
+                //lineView.LineMarkerOptions.Size = 10;
+                //lineView.LineMarkerOptions.Kind = MarkerKind.InvertedTriangle;
+                lineView.LineStyle.Thickness = 2;
+                lineView.LineMarkerOptions.BorderColor = Color.Black;
+                lineView.LineMarkerOptions.BorderVisible = true;
+                series.ShowInLegend = false;
+                series.CrosshairEnabled = DefaultBoolean.False;
+                chartDrawing.Series.Add(series);
+                series.View.Color = Color.Orange;
+            }
+        }
+
+        private void drawArrowRight(double x, double y)
+        {
+            var scale = 0.5;
+            var shiftedX = x + 1.5 * scale;
+            Series seriestriangle = new Series("", ViewType.Line);
+            seriestriangle.Points.Add(new SeriesPoint(shiftedX, y + 0.5 * scale));
+            seriestriangle.Points.Add(new SeriesPoint(shiftedX, y - 0.5 * scale));
+            seriestriangle.Points.Add(new SeriesPoint(shiftedX + 0.5 * scale, y));
+            seriestriangle.View.Color = Color.Orange;
+            chartDrawing.Series.Add(seriestriangle);
+
+            Series seriestriangle2 = new Series("", ViewType.Line);
+            seriestriangle2.Points.Add(new SeriesPoint(shiftedX, y - 0.5 * scale));
+            seriestriangle2.Points.Add(new SeriesPoint(shiftedX, y + 0.5 * scale));
+            seriestriangle2.Points.Add(new SeriesPoint(shiftedX + 0.5 * scale, y));
+            seriestriangle2.View.Color = Color.Orange;
+            chartDrawing.Series.Add(seriestriangle2);
+
+
+            Series seriestriangle3 = new Series("", ViewType.Line);
+            seriestriangle3.Points.Add(new SeriesPoint(x, y));
+            seriestriangle3.Points.Add(new SeriesPoint(shiftedX, y));
+            seriestriangle3.View.Color = Color.Orange;
+            chartDrawing.Series.Add(seriestriangle3);
+        }
+        private void drawArrowUp(double x, double y)
+        {
+            var scale =1.0;
+            var shiftedy = y + 1.5 * scale;
+            Series seriestriangle = new Series("", ViewType.Line);
+            seriestriangle.Points.Add(new SeriesPoint(x, shiftedy));
+            seriestriangle.Points.Add(new SeriesPoint(x, y));
+            seriestriangle.View.Color = Color.Orange;
+            chartDrawing.Series.Add(seriestriangle);
+
+            scale = 0.25;
+            seriestriangle = new Series("", ViewType.Line);
+            seriestriangle.Points.Add(new SeriesPoint(x + 0.5 * scale, shiftedy));
+            seriestriangle.Points.Add(new SeriesPoint(x - 0.5 * scale, shiftedy));
+            seriestriangle.View.Color = Color.Orange;
+            chartDrawing.Series.Add(seriestriangle);
+
+            seriestriangle= new Series("", ViewType.Line);
+            seriestriangle.Points.Add(new SeriesPoint(x - 0.5 * scale, shiftedy));
+            seriestriangle.Points.Add(new SeriesPoint(x, shiftedy + 2 * scale));
+            seriestriangle.View.Color = Color.Orange;
+            chartDrawing.Series.Add(seriestriangle);
+
+            seriestriangle = new Series("", ViewType.Line);
+            seriestriangle.Points.Add(new SeriesPoint(x + 0.5 * scale, shiftedy));
+            seriestriangle.Points.Add(new SeriesPoint(x, shiftedy + 2* scale));
+            seriestriangle.View.Color = Color.Orange;
+            chartDrawing.Series.Add(seriestriangle);
+        }
+
+        private void drawArrowDown(double x, double y)
+        {
+            var scale = 1.0;
+            var shiftedy = y - 1.5 * scale;
+            Series seriestriangle = new Series("", ViewType.Line);
+            seriestriangle.Points.Add(new SeriesPoint(x, shiftedy));
+            seriestriangle.Points.Add(new SeriesPoint(x, y));
+            seriestriangle.View.Color = Color.Orange;
+            chartDrawing.Series.Add(seriestriangle);
+
+            scale = 0.25;
+            seriestriangle = new Series("", ViewType.Line);
+            seriestriangle.Points.Add(new SeriesPoint(x + 0.5 * scale, shiftedy));
+            seriestriangle.Points.Add(new SeriesPoint(x - 0.5 * scale, shiftedy));
+            seriestriangle.View.Color = Color.Orange;
+            chartDrawing.Series.Add(seriestriangle);
+
+            seriestriangle = new Series("", ViewType.Line);
+            seriestriangle.Points.Add(new SeriesPoint(x - 0.5 * scale, shiftedy));
+            seriestriangle.Points.Add(new SeriesPoint(x, shiftedy - 2 * scale));
+            seriestriangle.View.Color = Color.Orange;
+            chartDrawing.Series.Add(seriestriangle);
+
+            seriestriangle = new Series("", ViewType.Line);
+            seriestriangle.Points.Add(new SeriesPoint(x + 0.5 * scale, shiftedy));
+            seriestriangle.Points.Add(new SeriesPoint(x, shiftedy - 2 * scale));
+            seriestriangle.View.Color = Color.Orange;
+            chartDrawing.Series.Add(seriestriangle);
+        }
+        private void drawArrowLeft(double x, double y)
+        {
+            var scale = 0.5;
+            var shiftedX = x - 1.5 * scale;
+            Series seriestriangle = new Series("", ViewType.Line);
+            seriestriangle.Points.Add(new SeriesPoint(shiftedX, y + 0.5 * scale));
+            seriestriangle.Points.Add(new SeriesPoint(shiftedX, y - 0.5 * scale));
+            seriestriangle.Points.Add(new SeriesPoint(shiftedX - 0.5 * scale, y));
+            seriestriangle.View.Color = Color.Orange;
+            chartDrawing.Series.Add(seriestriangle);
+
+            Series seriestriangle2 = new Series("", ViewType.Line);
+            seriestriangle2.Points.Add(new SeriesPoint(shiftedX, y - 0.5 * scale));
+            seriestriangle2.Points.Add(new SeriesPoint(shiftedX, y + 0.5 * scale));
+            seriestriangle2.Points.Add(new SeriesPoint(shiftedX - 0.5 * scale, y));
+            seriestriangle2.View.Color = Color.Orange;
+            chartDrawing.Series.Add(seriestriangle2);
+
+
+            Series seriestriangle3 = new Series("", ViewType.Line);
+            seriestriangle3.Points.Add(new SeriesPoint(x, y));
+            seriestriangle3.Points.Add(new SeriesPoint(shiftedX, y));
+            seriestriangle3.View.Color = Color.Orange;
+            chartDrawing.Series.Add(seriestriangle3);
         }
 
         private void GenerateColorMap(double x1, double y1, double x2, double y2, double minvalue, double maxvalue, int numPoints = 300)
