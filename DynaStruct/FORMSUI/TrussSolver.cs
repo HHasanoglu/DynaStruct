@@ -25,6 +25,16 @@ namespace FORMSUI
         stress,
         strain
     }
+
+    public enum eBenchmarkTests
+    {
+        Test1,
+        Test2,
+        Test3,
+        Test4,
+        Test5
+    }
+
     public partial class TrussSolver : DevExpress.XtraBars.Ribbon.RibbonForm
     {
         #region Ctor
@@ -35,23 +45,8 @@ namespace FORMSUI
             SubscribeToEvents();
             _nodesList = new List<Node>();
             _TrussElementsList = new List<TrussElement>();
-            //_restrainedNodes = new List<RestrainedNode>();
-            //_nodalForces = new List<PointLoad>();
-
-            CreateExample4();
-
-            prepareUI();
             setComboBoxItems();
-            SetNodeTableColumns();
-            SetElementsTableColumns();
-            SetBCTableColumns();
-            EditNodeTableGridView();
-            EditElementsTableGridView();
-            txtNodeIDForNodes.EditValue = _nodesList.Count + 1;
-            PrepareDataSource();
-            scaleSlider.Properties.Minimum = 0;
-            scaleSlider.Properties.Maximum = 10;
-            _scale = _initialScale;
+            prepareUI();
         }
 
         private void PrepareDataSource()
@@ -64,12 +59,16 @@ namespace FORMSUI
 
         private void setComboBoxItems()
         {
-            cmbResult.Items.Add(eResultToShow.Dispx);
-            cmbResult.Items.Add(eResultToShow.Dispy);
-            cmbResult.Items.Add(eResultToShow.Dispxy);
-            cmbResult.Items.Add(eResultToShow.strain);
-            cmbResult.Items.Add(eResultToShow.stress);
-            cmbResult.SelectedItem = eResultToShow.Dispx;
+            cmbResults.Items.Add(eResultToShow.Dispx);
+            cmbResults.Items.Add(eResultToShow.Dispy);
+            cmbResults.Items.Add(eResultToShow.Dispxy);
+            cmbResults.Items.Add(eResultToShow.strain);
+            cmbResults.Items.Add(eResultToShow.stress);
+            TestsComboBox.Items.Add("Test 1");
+            TestsComboBox.Items.Add("Test 2");
+            TestsComboBox.Items.Add("Test 3");
+            TestsComboBox.Items.Add("Test 4");
+            TestsComboBox.Items.Add("Test 5");
         }
 
         #endregion
@@ -80,9 +79,6 @@ namespace FORMSUI
         private List<TrussElement> _TrussElementsList;
         private DataTable _dataNodeTable;
         private DataTable _dataTrussElementsTable;
-        private DataTable _dataBoundaryConditionsTable;
-        private DataTable _dataLoadTable;
-        private int _nodeId;
         private string _strFormat = "#0.#";
         //private List<RestrainedNode> _restrainedNodes;
         //private List<PointLoad> _nodalForces;
@@ -113,10 +109,11 @@ namespace FORMSUI
         private int _pieces;
         private int _scale;
         private bool _isAnalyzed;
+        private eResultToShow _cmbResultsIndex;
+        private bool _IscmbResultsIndexChanged;
 
         private RepositoryItemComboBox _combo = new RepositoryItemComboBox();
         private int _selectedRowHandle;
-        private GridColumn _selectedGridColumn;
         private int _initialScale;
         #endregion
 
@@ -124,7 +121,7 @@ namespace FORMSUI
 
         private void SubscribeToEvents()
         {
-            BtnAnalyze.Click += BtnAnalyze_Click;
+            BarBtnSolve.ItemClick += BtnAnalyze_Click;
             btnAddNode.Click += BtnAddNode_Click;
             btnAddElement.Click += BtnAddElement_Click;
             gvNodes.CellValueChanged += GvNodes_CellValueChanged;
@@ -133,15 +130,46 @@ namespace FORMSUI
             _combo.SelectedValueChanged += _combo_SelectedValueChanged;
             chartDrawing.CustomDrawCrosshair += ChartDrawing_CustomDrawCrosshair;
             pictureBox1.Paint += canvasPictureBox_Paint;
-            cmbResult.SelectedIndexChanged += CmbResult_SelectedIndexChanged;
+            cmbResults.SelectedIndexChanged += cmbResults_SelectedIndexChanged;
             this.Resize += TrussSolver_Resize;
-            scaleSlider.ValueChanged += ScaleSlider_ValueChanged;
+            scaleTrackbar.ValueChanged += scaleTrackbar_ValueChanged;
+            TestsComboBox.SelectedIndexChanged += TestsComboBox_SelectedIndexChanged;
         }
 
-        private void ScaleSlider_ValueChanged(object sender, EventArgs e)
+        private void TestsComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            _nodesList.Clear();
+            _TrussElementsList.Clear();
+            var selectedValue = (eBenchmarkTests)((ComboBoxEdit)sender).SelectedIndex;
+            if (selectedValue == eBenchmarkTests.Test1)
+            {
+                CreateExample1();
+            }
+            else if (selectedValue == eBenchmarkTests.Test2)
+            {
+                CreateExample2();
+            }
+            else if (selectedValue == eBenchmarkTests.Test3)
+            {
+                CreateExample3();
+            }
+            else if (selectedValue == eBenchmarkTests.Test4)
+            {
+                CreateExample4();
+            }
+            else if (selectedValue == eBenchmarkTests.Test5)
+            {
+                CreateExample5();
+            }
+            prepareUI();
+        }
+
+        private void scaleTrackbar_ValueChanged(object sender, EventArgs e)
         {
             _scale = _initialScale;
-            var value = (double)scaleSlider.Value * 10000000;
+            var zoomTrackBar = (TrackBarControl)sender;
+
+            var value = (int)zoomTrackBar.EditValue * 10000000;
 
             _scale += (int)(value);
             updateColorBarValues();
@@ -334,20 +362,24 @@ namespace FORMSUI
             PrepareDataSource();
         }
 
-        private void CmbResult_SelectedIndexChanged(object sender, EventArgs e)
+        private void cmbResults_SelectedIndexChanged(object sender, EventArgs e)
         {
+            _IscmbResultsIndexChanged = true;
+            _cmbResultsIndex = (eResultToShow)((ComboBoxEdit)sender).SelectedIndex;
             updateColorBarValues();
-
         }
 
         private void BtnAnalyze_Click(object sender, System.EventArgs e)
         {
-            _isAnalyzed = false;
-            Assembler assembler = new Assembler(_TrussElementsList, _nodesList);
-            _isAnalyzed = true;
-            updateColorBarValues();
-            AddNodesDataRows();
-            AddElementsDataRows();
+            if (_TrussElementsList.Count > 0 && _nodesList.Count > 0)
+            {
+                _isAnalyzed = false;
+                Assembler assembler = new Assembler(_TrussElementsList, _nodesList);
+                _isAnalyzed = true;
+                updateColorBarValues();
+                AddNodesDataRows();
+                AddElementsDataRows();
+            }
         }
 
         private void CreateExample1()
@@ -461,7 +493,10 @@ namespace FORMSUI
             int member = 0;
             for (int i = 1; i <= 27; i++)
             {
-                AddMember(++member, i, i + 1, E, A);
+                if (i != 15)
+                {
+                    AddMember(++member, i, i + 1, E, A);
+                }
             }
             int end = 28;
             for (int i = 2; i <= 14; i++)
@@ -494,7 +529,86 @@ namespace FORMSUI
             }
 
         }
+        private void CreateExample5()
+        {
+            var E = 200 * Math.Pow(10, 9);
+            var A = 5000;
+            int node = 0;
+            AddNode(++node, 0, 0);
+            AddNode(++node, 9.804, 18);
+            AddNode(++node, 20, 18);
+            AddNode(++node, 30.195, 18);
+            AddNode(++node, 40, 18);
+            AddNode(++node, 50.715, 18);
+            AddNode(++node, 62.939, 18);
+            AddNode(++node, 76.204, 18);
+            AddNode(++node, 90, 18);
+            AddNode(++node, 103.79, 18);
+            AddNode(++node, 117.06, 18);
+            AddNode(++node, 129.28, 18);
+            AddNode(++node, 140, 18);
+            AddNode(++node, 149.8, 18);
+            AddNode(++node, 160, 18);
+            AddNode(++node, 170.19, 18);
+            AddNode(++node, 180, 0);
+            AddNode(++node, 170.16, 5.194);
+            AddNode(++node, 160, 6.948);
+            AddNode(++node, 149.8, 5.194);
+            AddNode(++node, 140, 0);
+            AddNode(++node, 129.28, 4.939);
+            AddNode(++node, 117.06, 8.61);
+            AddNode(++node, 103.79, 10.87);
+            AddNode(++node, 90, 11.633);
+            AddNode(++node, 76.204, 10.87);
+            AddNode(++node, 62.939, 8.61);
+            AddNode(++node, 50.715, 4.939);
+            AddNode(++node, 40, 0);
+            AddNode(++node, 30.195, 5.194);
+            AddNode(++node, 20, 6.948);
+            AddNode(++node, 9.804, 5.194);
+            int member = 0;
+            for (int i = 1; i <= 31; i++)
+            {
+                AddMember(++member, i, i + 1, E, A);
+            }
+            int end = 32;
+            for (int i = 2; i <= 16; i++)
+            {
+                AddMember(member, i, end, E, A);
+                member++;
+                end--;
+            }
 
+            AddMember(++member, 1, 32, E, A);
+            AddMember(++member, 3, 32, E, A);
+            AddMember(++member, 3, 30, E, A);
+            AddMember(++member, 4, 29, E, A);
+            AddMember(++member, 6, 29, E, A);
+            AddMember(++member, 7, 28, E, A);
+            AddMember(++member, 8, 27, E, A);
+            AddMember(++member, 9, 26, E, A);
+            AddMember(++member, 9, 24, E, A);
+            AddMember(++member, 10, 23, E, A);
+            AddMember(++member, 11, 22, E, A);
+            AddMember(++member, 12, 21, E, A);
+            AddMember(++member, 14, 21, E, A);
+            AddMember(++member, 15, 20, E, A);
+            AddMember(++member, 15, 18, E, A);
+
+            AddRestrainedNode(1, true, true);
+            AddRestrainedNode(17, true, true);
+            AddRestrainedNode(21, true, true);
+            AddRestrainedNode(29, true, true);
+
+            AddLoad(6, 0, -200000);
+            AddLoad(7, 0, -200000);
+            AddLoad(8, 0, -200000);
+            AddLoad(9, 0, -200000);
+            AddLoad(10, 0, -200000);
+            AddLoad(11, 0, -200000);
+            AddLoad(12, 0, -200000);
+
+        }
         private void AddLoad(int nodeId, double fx, double fy)
         {
             var node = (TrussNode)GetNodeById(nodeId);
@@ -529,7 +643,16 @@ namespace FORMSUI
 
         private void prepareUI()
         {
-            _nodeId = 1;
+
+            SetNodeTableColumns();
+            SetElementsTableColumns();
+            SetBCTableColumns();
+
+            txtNodeIDForNodes.EditValue = _nodesList.Count + 1;
+            PrepareDataSource();
+            scaleTrackbar.Minimum = 0;
+            scaleTrackbar.Maximum = 10;
+            _scale = _initialScale;
             //cmbSupportType.Items.Add(eRestraintCondition.X);
             //cmbSupportType.Items.Add(eRestraintCondition.Y);
             //cmbSupportType.Items.Add(eRestraintCondition.XY);
@@ -551,7 +674,7 @@ namespace FORMSUI
 
             PointSeriesView seriesView = (PointSeriesView)series.View;
 
-            GetCoordinates(type,magnificationFactor, numPoints, out List<double> xcoordList, out List<double> ycoordList);
+            GetCoordinates(type, magnificationFactor, numPoints, out List<double> xcoordList, out List<double> ycoordList);
 
             List<double> intensities = GetIntesities(numPoints, type);
 
@@ -693,6 +816,7 @@ namespace FORMSUI
                 gvNodes.Columns[i].AppearanceCell.TextOptions.HAlignment = DevExpress.Utils.HorzAlignment.Center;
             }
             gvNodes.BestFitColumns();
+            _combo.Items.Clear();
             _combo.Items.AddRange(Enum.GetValues(typeof(eRestraint)).Cast<eRestraint>().Select(e => e.ToString()).ToArray());
             gvNodes.Columns[_columnNameXRestaint].ColumnEdit = _combo;
             gvNodes.Columns[_columnNameYRestaint].ColumnEdit = _combo;
@@ -971,7 +1095,7 @@ namespace FORMSUI
         }
         private void drawArrowUp(double x, double y)
         {
-            var scale =1.0;
+            var scale = 1.0;
             var shiftedy = y + 1.5 * scale;
             Series seriestriangle = new Series("", ViewType.Line);
             seriestriangle.Points.Add(new SeriesPoint(x, shiftedy));
@@ -986,7 +1110,7 @@ namespace FORMSUI
             seriestriangle.View.Color = Color.Orange;
             chartDrawing.Series.Add(seriestriangle);
 
-            seriestriangle= new Series("", ViewType.Line);
+            seriestriangle = new Series("", ViewType.Line);
             seriestriangle.Points.Add(new SeriesPoint(x - 0.5 * scale, shiftedy));
             seriestriangle.Points.Add(new SeriesPoint(x, shiftedy + 2 * scale));
             seriestriangle.View.Color = Color.Orange;
@@ -994,7 +1118,7 @@ namespace FORMSUI
 
             seriestriangle = new Series("", ViewType.Line);
             seriestriangle.Points.Add(new SeriesPoint(x + 0.5 * scale, shiftedy));
-            seriestriangle.Points.Add(new SeriesPoint(x, shiftedy + 2* scale));
+            seriestriangle.Points.Add(new SeriesPoint(x, shiftedy + 2 * scale));
             seriestriangle.View.Color = Color.Orange;
             chartDrawing.Series.Add(seriestriangle);
         }
@@ -1186,14 +1310,12 @@ namespace FORMSUI
 
         private void updateColorBarValues()
         {
-            if (cmbResult.SelectedItem != null && _isAnalyzed)
+            if (_IscmbResultsIndexChanged && _isAnalyzed)
             {
-
-                eResultToShow selectedItem = (eResultToShow)Enum.Parse(typeof(eResultToShow), cmbResult.SelectedItem.ToString());
                 _pieces = 10;
 
-                SetMinMaxValues(selectedItem);
-                AddDisplacementColorMapXDirection(selectedItem, _scale);
+                SetMinMaxValues(_cmbResultsIndex);
+                AddDisplacementColorMapXDirection(_cmbResultsIndex, _scale);
                 drawcolorbar();
             }
         }

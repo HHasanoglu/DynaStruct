@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MainUI", "MainUI.csproj", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Solver", "..\..\Solver\Solver.csproj", "{FFE8435A-B2F0-4AA2-8DDE-C0427EDF9693}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FORMSUI", "..\FORMSUI\FORMSUI.csproj", "{C9E23880-6B20-4F75-BBDF-0069522330CC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrussSolver", "..\FORMSUI\TrussSolver.csproj", "{C9E23880-6B20-4F75-BBDF-0069522330CC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

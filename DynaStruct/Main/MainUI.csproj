@@ -100,9 +100,9 @@
       <Project>{ffe8435a-b2f0-4aa2-8dde-c0427edf9693}</Project>
       <Name>Solver</Name>
     </ProjectReference>
-    <ProjectReference Include="..\FORMSUI\FORMSUI.csproj">
+    <ProjectReference Include="..\FORMSUI\TrussSolver.csproj">
       <Project>{c9e23880-6b20-4f75-bbdf-0069522330cc}</Project>
-      <Name>FORMSUI</Name>
+      <Name>TrussSolver</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
