@@ -6,19 +6,21 @@ using System.Threading.Tasks;
 
 namespace Solver
 {
-    public class TrussNode : ANode
+    public class FrameNode : ANode
     {
         #region Ctor
 
-        public TrussNode(int NodeID, double xcoord, double ycoord) : base(NodeID, xcoord, ycoord)
+        public FrameNode(int NodeID, double xcoord, double ycoord) : base(NodeID, xcoord, ycoord)
         {
-            _dofPerNode = 2;
+            _dofPerNode = 3;
         }
 
         #endregion
 
         #region Private Fields
+        private eRestraint _rotationRestraint;
 
+        public eRestraint RotationRestraint { get => _rotationRestraint; set => _rotationRestraint = value; }
         #endregion
 
         #region Public Properties

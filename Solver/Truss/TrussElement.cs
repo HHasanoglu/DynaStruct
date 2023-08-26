@@ -11,7 +11,7 @@ namespace Solver
     {
         #region Ctor
 
-        public TrussElement(int memberLabel, Node NodeI, Node NodeJ, double E, double A)
+        public TrussElement(int memberLabel, ANode NodeI, ANode NodeJ, double E, double A)
         {
             _Id = memberLabel;
             _nodeI = NodeI;
@@ -28,8 +28,8 @@ namespace Solver
         #region Private Fields
 
         private int _Id;
-        private Node _nodeI;
-        private Node _nodeJ;
+        private ANode _nodeI;
+        private ANode _nodeJ;
         private double _A;
         private double _E;
         private double _L;
@@ -47,9 +47,12 @@ namespace Solver
 
         #region Public Properties
 
+        public int ID { get => _Id; set => _Id = value; }
+        public ANode NodeI { get => _nodeI; set => _nodeI = value; }
+        public ANode NodeJ { get => _nodeJ; set => _nodeJ = value; }
         public Matrix<double> klocal { get => _kl; set => _kl = value; }
         public Matrix<double> Kglobal { get => _kg; set => _kg = value; }
-        public Matrix<double> T { get => _T; set => _T = value; }
+        public Matrix<double> TransposeMatrix { get => _T; set => _T = value; }
         public double IEndDisplacement { get => _IEndDisplacement; set => _IEndDisplacement = value; }
         public double JEndDisplacement { get => _JEndDisplacement; set => _JEndDisplacement = value; }
         public double IEndForce { get => _IEndForce; set => _IEndForce = value; }
@@ -58,9 +61,6 @@ namespace Solver
         public double E { get => _E; set => _E = value; }
         public double L { get => _L; set => _L = value; }
         public double Angle { get => 180 / Math.PI * _theta; set => _theta = value; }
-        public Node NodeI { get => _nodeI; set => _nodeI = value; }
-        public Node NodeJ { get => _nodeJ; set => _nodeJ = value; }
-        public int ID { get => _Id; set => _Id = value; }
 
         #endregion
 

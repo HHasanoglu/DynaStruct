@@ -47,8 +47,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Frame\FrameElement.cs" />
+    <Compile Include="Frame\FrameNode.cs" />
+    <Compile Include="Frame\SolverHelper.cs" />
+    <Compile Include="IElement.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Common\Node.cs" />
+    <Compile Include="Common\ANode.cs" />
     <Compile Include="Truss\Assembler.cs" />
     <Compile Include="Truss\Enums\Enums.cs" />
     <Compile Include="Truss\TrussElement.cs" />

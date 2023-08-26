@@ -17,14 +17,6 @@ using System.Windows.Forms;
 
 namespace FESolver
 {
-    public enum eResultToShow
-    {
-        Dispx,
-        Dispy,
-        stress,
-        strain
-    }
-
     public partial class Main : DevExpress.XtraBars.Ribbon.RibbonForm
     {
         #region Ctor

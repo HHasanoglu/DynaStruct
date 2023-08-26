@@ -9,6 +9,15 @@ namespace Solver
     public enum eRestraint
     {
         Free,
-        Pinned
+        Restrained
+    }
+
+    public enum eResultToShow
+    {
+        Dispx,
+        Dispy,
+        Dispxy,
+        stress,
+        strain
     }
 }

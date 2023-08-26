@@ -17,15 +17,6 @@ using System.Windows.Forms;
 
 namespace FORMSUI
 {
-    public enum eResultToShow
-    {
-        Dispx,
-        Dispy,
-        Dispxy,
-        stress,
-        strain
-    }
-
     public enum eBenchmarkTests
     {
         Test1,
@@ -43,7 +34,7 @@ namespace FORMSUI
         {
             InitializeComponent();
             SubscribeToEvents();
-            _nodesList = new List<Node>();
+            _nodesList = new List<ANode>();
             _TrussElementsList = new List<TrussElement>();
             setComboBoxItems();
             prepareUI();
@@ -75,7 +66,7 @@ namespace FORMSUI
 
         #region Private Fields
 
-        private List<Node> _nodesList;
+        private List<ANode> _nodesList;
         private List<TrussElement> _TrussElementsList;
         private DataTable _dataNodeTable;
         private DataTable _dataTrussElementsTable;
@@ -374,7 +365,7 @@ namespace FORMSUI
             if (_TrussElementsList.Count > 0 && _nodesList.Count > 0)
             {
                 _isAnalyzed = false;
-                Assembler assembler = new Assembler(_TrussElementsList, _nodesList);
+                //Assembler assembler = new Assembler(_TrussElementsList, _nodesList);
                 _isAnalyzed = true;
                 updateColorBarValues();
                 AddNodesDataRows();
@@ -620,11 +611,11 @@ namespace FORMSUI
         private void AddRestrainedNode(int nodeId, bool isXRestrained, bool isYRestrained)
         {
             var node = (TrussNode)GetNodeById(nodeId);
-            node.XRestraint = isXRestrained ? eRestraint.Pinned : eRestraint.Free;
-            node.YRestraint = isYRestrained ? eRestraint.Pinned : eRestraint.Free;
+            node.XRestraint = isXRestrained ? eRestraint.Restrained : eRestraint.Free;
+            node.YRestraint = isYRestrained ? eRestraint.Restrained : eRestraint.Free;
         }
 
-        private Node GetNodeById(int NodeId)
+        private ANode GetNodeById(int NodeId)
         {
             return _nodesList.FirstOrDefault(x => x.ID == NodeId);
         }
@@ -909,7 +900,7 @@ namespace FORMSUI
                 row[_columnNameYcoord] = node.Ycoord;
                 row[_columnNameXRestaint] = node.XRestraint;
                 row[_columnNameYRestaint] = node.YRestraint;
-                if (node.XRestraint == eRestraint.Pinned && !_isAnalyzed)//TODO make it inline if
+                if (node.XRestraint == eRestraint.Restrained && !_isAnalyzed)//TODO make it inline if
                 {
                     row[_columnNameFx] = "?";
                 }
@@ -918,7 +909,7 @@ namespace FORMSUI
                     row[_columnNameFx] = node.Fx;
                 }
 
-                if (node.YRestraint == eRestraint.Pinned)//TODO make it inline if
+                if (node.YRestraint == eRestraint.Restrained)//TODO make it inline if
                 {
                     row[_columnNameFy] = "?";
                 }
@@ -928,7 +919,7 @@ namespace FORMSUI
                 }
                 if (_isAnalyzed)
                 {
-                    if (node.XRestraint == eRestraint.Pinned)
+                    if (node.XRestraint == eRestraint.Restrained)
                     {
                         row[_columnNameDispX] = node.Dispx.ToString(_strFormat);
                     }
@@ -937,7 +928,7 @@ namespace FORMSUI
                         row[_columnNameDispX] = node.Dispx.ToString("E2");
                     }
 
-                    if (node.YRestraint == eRestraint.Pinned)
+                    if (node.YRestraint == eRestraint.Restrained)
                     {
                         row[_columnNameDispY] = node.Dispx.ToString(_strFormat);
                     }
