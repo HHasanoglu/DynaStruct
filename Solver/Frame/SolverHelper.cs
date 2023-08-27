@@ -151,8 +151,8 @@ namespace Solver.Frame
             var A = 30000;
             var I = 300e6;
             AddFrameNode(1, 0, 0);
-            AddFrameNode(2, 0, 5);
-            AddFrameNode(3, 10, 5);
+            AddFrameNode(2, 0, 5000);
+            AddFrameNode(3, 10000, 5000);
 
             AddFrameMember(1, 1, 2, E, A, I);
             AddFrameMember(2, 2, 3, E, A, I);

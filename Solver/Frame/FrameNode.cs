@@ -19,8 +19,10 @@ namespace Solver
 
         #region Private Fields
         private eRestraint _rotationRestraint;
+        private double _rotation;
 
         public eRestraint RotationRestraint { get => _rotationRestraint; set => _rotationRestraint = value; }
+        public double Rotation { get => _rotation; set => _rotation = value; }
         #endregion
 
         #region Public Properties

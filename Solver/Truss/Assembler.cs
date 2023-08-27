@@ -89,7 +89,7 @@ namespace Solver
                     G[i + dofPerNode] = arr2d[element.Nodes[1].ID - 1, i];
                 }
 
-                for (int i = 0; i < 2*dofPerNode; i++)
+                for (int i = 0; i < 2 * dofPerNode; i++)
                 {
                     var P = G[i];
                     for (int j = 0; j < 2 * dofPerNode; j++)
@@ -114,11 +114,11 @@ namespace Solver
                 for (int i = 0; i < dofPerNode; i++)
                 {
                     G[i] = arr2d[element.Nodes[0].ID - 1, i];
-                    G[i +dofPerNode] = arr2d[element.Nodes[1].ID - 1, i];
+                    G[i + dofPerNode] = arr2d[element.Nodes[1].ID - 1, i];
                 }
 
                 Matrix<double> Kg = element.GetGlobalStiffnessMatrix();
-                for (int i = 0; i < 2*dofPerNode; i++)
+                for (int i = 0; i < 2 * dofPerNode; i++)
                 {
                     for (int j = 0; j < 2 * dofPerNode; j++)
                     {
@@ -177,7 +177,7 @@ namespace Solver
                 if (node.YRestraint == eRestraint.Restrained) arr2d[rowID - 1, 1] = -1;
                 if (node is FrameNode)
                 {
-                    if (((FrameNode)node).RotationRestraint== eRestraint.Restrained) arr2d[rowID - 1, 2] = -1;
+                    if (((FrameNode)node).RotationRestraint == eRestraint.Restrained) arr2d[rowID - 1, 2] = -1;
                 }
             }
             count = 0;
@@ -217,27 +217,36 @@ namespace Solver
 
         private Matrix<double> GetTotalDisplacement(List<ANode> Nodes, Matrix<double> displacements)
         {
+            var dofPerNode = Nodes[0].DofPerNode;
             GetMappingArray(out int[,] arr2d, out int count, Nodes);
-            var NumberOfDof = Nodes.Count * Nodes[0].DofPerNode;
+            var NumberOfDof = Nodes.Count * dofPerNode;
             var displacementsTotal = Matrix<double>.Build.Dense(NumberOfDof, 1);
 
-            for (int j = 0; j < NumberOfDof ; j++)
+            for (int i = 0; i < dofPerNode; i++)
             {
-                for (int i = 0; i < NumberOfDof; i++)
+                for (int j = 0; j < dofPerNode; j++)
                 {
-                    var Q = arr2d[j, i];
+                    var Q = arr2d[i, j];
                     if (Q != -1)
                     {
-                        var Id = NumberOfDof * j + i;
+                        var Id = dofPerNode * i + j;
                         displacementsTotal[Id, 0] = displacements[Q, 0];
-                        var node = Nodes.FirstOrDefault(x => x.ID == j + 1);
-                        if (i == 0)
+                        var node = Nodes.FirstOrDefault(x => x.ID == i + 1);
+                        if (j == 0)
                         {
                             node.Dispx = displacements[Q, 0];
                         }
-                        else
+                        else if (j == 1)
                         {
                             node.Dispy = displacements[Q, 0];
+                        }
+                        else
+                        {
+
+                            if (node as FrameNode != null)
+                            {
+                                ((FrameNode)node).Rotation = displacements[Q, 0];
+                            }
                         }
                     }
                 }
