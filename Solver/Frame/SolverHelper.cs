@@ -99,26 +99,26 @@ namespace Solver.Frame
 
         public double GetMinValueForColorMap(eResultToShow type)
         {
-            double maxValue = 0;
+            double minValue = 0;
             if (_nodeList != null)
             {
                 switch (type)
                 {
                     case eResultToShow.Dispx:
-                        maxValue = _nodeList.Min(x => Math.Abs(x.Dispx));
+                        minValue = _nodeList.Min(x => Math.Abs(x.Dispx));
                         break;
                     case eResultToShow.Dispy:
-                        maxValue = _nodeList.Min(x => Math.Abs(x.Dispy));
+                        minValue = _nodeList.Min(x => Math.Abs(x.Dispy));
                         break;
                     case eResultToShow.Dispxy:
-                        maxValue = _nodeList.Min(x => Math.Abs(x.Dispxy));
+                        minValue = _nodeList.Min(x => Math.Abs(x.Dispxy));
                         break;
                     default:
-                        maxValue = _nodeList.Min(x => Math.Abs(x.Dispy));
+                        minValue = _nodeList.Min(x => Math.Abs(x.Dispy));
                         break;
                 }
             }
-            return maxValue;
+            return minValue;
         }
 
         public double GetMaxValueForColorMap(eResultToShow type)

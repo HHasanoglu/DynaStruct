@@ -1,4 +1,5 @@
 ﻿using MathNet.Numerics.LinearAlgebra;
+using Solver.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,13 +14,12 @@ namespace Solver
         public Assembler(List<IElement> ElementList, List<ANode> Nodes)
         {
             var KGlobal = getAssembleMatrix(Nodes, ElementList);
-            var KGReduced = getAssembledReducedMatrix(Nodes, ElementList);
-            var text = showMatrixRepresention(KGReduced);
+            Matrix<double> KGReduced = getAssembledReducedMatrix(Nodes, ElementList);
+            KGReduced.ShowMatrixRepresention<double>();
             var forceReduced = GetReducedForceVector(Nodes);
             var displacement = GetDisplacementVector(KGReduced, forceReduced);
             var TotalDisplacementVector = GetTotalDisplacement(Nodes, displacement);
             var reactions = GetReactions(KGlobal, TotalDisplacementVector);
-            SetMemberForces(ElementList, TotalDisplacementVector);
         }
 
         #endregion
@@ -44,26 +44,6 @@ namespace Solver
                 text.AppendLine();
             }
             return text.ToString();
-        }
-
-        private void SetMemberForces(List<IElement> ElementsList, Matrix<double> TotalDisplacementVector)
-        {
-            var Displacement = Matrix<double>.Build.Dense(4, 1);
-
-            foreach (TrussElement element in ElementsList)
-            {
-                Displacement[0, 0] = TotalDisplacementVector[2 * element.NodeI.ID - 2, 0];
-                Displacement[1, 0] = TotalDisplacementVector[2 * element.NodeI.ID - 1, 0];
-                Displacement[2, 0] = TotalDisplacementVector[2 * element.NodeJ.ID - 2, 0];
-                Displacement[3, 0] = TotalDisplacementVector[2 * element.NodeJ.ID - 1, 0];
-
-                var displacementLocal = element.TransposeMatrix * Displacement;
-                element.IEndDisplacement = displacementLocal[0, 0];
-                element.JEndDisplacement = displacementLocal[1, 0];
-                element.IEndForce = element.E * element.A / element.L * (element.JEndDisplacement - element.IEndDisplacement);
-                element.JEndForce = element.E * element.A / element.L * (element.IEndDisplacement - element.JEndDisplacement);
-
-            }
         }
 
         private Matrix<double> GetReactions(Matrix<double> KG, Matrix<double> displacementsTotal)

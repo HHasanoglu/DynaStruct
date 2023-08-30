@@ -47,6 +47,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Common\MatrixExtension.cs" />
     <Compile Include="Frame\FrameElement.cs" />
     <Compile Include="Frame\FrameNode.cs" />
     <Compile Include="Frame\SolverHelper.cs" />

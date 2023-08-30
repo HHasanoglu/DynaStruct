@@ -396,8 +396,8 @@ namespace FORMSUI
                 var NodeI = element.Nodes[0];
                 var NodeJ = element.Nodes[1];
                 double x1 = NodeI.Xcoord;
-                double x2 = NodeJ.Xcoord;
                 double y1 = NodeI.Ycoord;
+                double x2 = NodeJ.Xcoord;
                 double y2 = NodeJ.Ycoord;
                 if (type == eResultToShow.Dispx || type == eResultToShow.Dispxy)
                 {
@@ -697,14 +697,46 @@ namespace FORMSUI
         {
             chartDrawing.Series.Clear();
             // Add elements to the series
-            AddElementsToSeries();
 
-            // Add nodes to the series
-            AddNodesToSeries();
+            //AddElementsToSeries();
 
-            // Add Loading Info to the chart
-            DrawLoadingInfo();
+            //// Add nodes to the series
+            //AddNodesToSeries();
 
+            //// Add Loading Info to the chart
+            //DrawLoadingInfo();
+
+            DrawMomentDiagram();
+
+        }
+
+        private void DrawMomentDiagram()
+        {
+            ChartControl areaChart = new ChartControl();
+
+            // Create two area series.
+            Series series1 = new Series("Series 1", ViewType.Line);
+
+            // Add points to them.
+            series1.Points.Add(new SeriesPoint(1, 15));
+            series1.Points.Add(new SeriesPoint(2, -18));
+            series1.Points.Add(new SeriesPoint(5, 12));
+            series1.Points.Add(new SeriesPoint(1, 15));
+
+            // Add both series to the chart.
+            areaChart.Series.AddRange(new Series[] { series1});
+
+            // Set the numerical argument scale types for the series,
+            // as it is qualitative, by default.
+            series1.ArgumentScaleType = ScaleType.Numerical;
+
+
+            // Access the type-specific options of the diagram.
+            ((XYDiagram)areaChart.Diagram).EnableAxisXZooming = true;
+
+
+
+            chartDrawing.Series.Add(series1);
         }
 
         private void DrawLoadingInfo()
@@ -995,11 +1027,11 @@ namespace FORMSUI
 
         private void updateColorBarValues()
         {
-            if (_IscmbResultsIndexChanged && _isAnalyzed)
+            if (_IscmbResultsIndexChanged)
             {
                 _pieces = 10;
 
-                AddDisplacementColorMapXDirection(_cmbResultsIndex, _scale);
+                AddDisplacementColorMapXDirection(_cmbResultsIndex);
                 drawcolorbar();
             }
         }

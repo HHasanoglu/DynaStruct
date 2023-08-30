@@ -23,6 +23,8 @@ namespace Solver
 
         public eRestraint RotationRestraint { get => _rotationRestraint; set => _rotationRestraint = value; }
         public double Rotation { get => _rotation; set => _rotation = value; }
+
+        public double[] DisplacementVector => new double[] { Dispx, Dispy,Rotation };
         #endregion
 
         #region Public Properties
