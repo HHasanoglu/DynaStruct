@@ -739,6 +739,8 @@ namespace FORMSUI
             chartDrawing.Series.Add(series1);
         }
 
+
+
         private void DrawLoadingInfo()
         {
             foreach (var node in _solverHelper.NodeList)
