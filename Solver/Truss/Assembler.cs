@@ -60,8 +60,10 @@ namespace Solver
             var G = new int[2 * dofPerNode];
 
             //var sorted = StiffnessMatrixList.Ordw(x => x.StartNode);
+            var kk = 0;
             foreach (IElement element in ElementsList)
             {
+                kk++;
                 Matrix<double> Kg = element.GetGlobalStiffnessMatrix();
                 for (int i = 0; i < dofPerNode; i++)
                 {
@@ -202,7 +204,7 @@ namespace Solver
             var NumberOfDof = Nodes.Count * dofPerNode;
             var displacementsTotal = Matrix<double>.Build.Dense(NumberOfDof, 1);
 
-            for (int i = 0; i < dofPerNode; i++)
+            for (int i = 0; i < Nodes.Count; i++)
             {
                 for (int j = 0; j < dofPerNode; j++)
                 {

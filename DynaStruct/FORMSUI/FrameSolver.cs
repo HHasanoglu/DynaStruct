@@ -24,7 +24,7 @@ namespace FORMSUI
         public FrameSolver()
         {
             InitializeComponent();
-            _solverHelper = new SolverHelper();
+            _solverHelper = new FrameSolverHelper();
             _solverHelper.CreateFrameExample1();
             setComboBoxItems();
             prepareUI();
@@ -58,7 +58,7 @@ namespace FORMSUI
         #region Private Fields
 
         private DataTable _dataNodeTable;
-        private SolverHelper _solverHelper;
+        private FrameSolverHelper _solverHelper;
         private DataTable _dataTrussElementsTable;
         private string _strFormat = "#0.#";
         //private List<RestrainedNode> _restrainedNodes;

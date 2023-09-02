@@ -7,20 +7,16 @@ using System.Threading.Tasks;
 
 namespace Solver
 {
-    public class TrussElement
+    public class TrussElement : IElement
     {
         #region Ctor
 
         public TrussElement(int memberLabel, ANode NodeI, ANode NodeJ, double E, double A)
         {
             _Id = memberLabel;
-            _nodeI = NodeI;
-            _nodeJ = NodeJ;
+            _nodes = new List<ANode>() { NodeI, NodeJ };
             _E = E;
             _A = A;
-            EvaluateProperties();
-            evaluateTransformationMatrix();
-            EvaluateLocalAndGlobalStiffnessMatrix();
         }
 
         #endregion
@@ -28,91 +24,130 @@ namespace Solver
         #region Private Fields
 
         private int _Id;
-        private ANode _nodeI;
-        private ANode _nodeJ;
-        private double _A;
         private double _E;
-        private double _L;
-        private double _theta;
-        private double _K;
-        private Matrix<double> _T;
-        private Matrix<double> _kl;
-        private Matrix<double> _kg;
-        private double _IEndDisplacement;
-        private double _JEndDisplacement;
-        private double _IEndForce;
-        private double _JEndForce;
+        private double _A;
+        private double _I;
+        private List<ANode> _nodes;
 
         #endregion
 
         #region Public Properties
 
-        public int ID { get => _Id; set => _Id = value; }
-        public ANode NodeI { get => _nodeI; set => _nodeI = value; }
-        public ANode NodeJ { get => _nodeJ; set => _nodeJ = value; }
-        public Matrix<double> klocal { get => _kl; set => _kl = value; }
-        public Matrix<double> Kglobal { get => _kg; set => _kg = value; }
-        public Matrix<double> TransposeMatrix { get => _T; set => _T = value; }
-        public double IEndDisplacement { get => _IEndDisplacement; set => _IEndDisplacement = value; }
-        public double JEndDisplacement { get => _JEndDisplacement; set => _JEndDisplacement = value; }
-        public double IEndForce { get => _IEndForce; set => _IEndForce = value; }
-        public double JEndForce { get => _JEndForce; set => _JEndForce = value; }
-        public double A { get => _A; set => _A = value; }
-        public double E { get => _E; set => _E = value; }
-        public double L { get => _L; set => _L = value; }
-        public double Angle { get => 180 / Math.PI * _theta; set => _theta = value; }
+        public int Id =>_Id;
+        public List<ANode> Nodes => _nodes;
+        public TrussNode NodeI  => (TrussNode)_nodes[0];
+        public TrussNode NodeJ => (TrussNode)_nodes[1];
+        public double A => _A;
+        public double E => _E;
+        public double L => GetMemberLength();
+        public double Angle => getMemberAngleAsDegree();
+        public double IEndForce => 0;
+        public double JEndForce => 0;
+
+
 
         #endregion
 
         #region Private Methods
-        private void EvaluateProperties()
+
+        private double GetMemberLength()
         {
-            _L = Math.Sqrt(Math.Pow(_nodeJ.Xcoord - _nodeI.Xcoord, 2) + Math.Pow(_nodeJ.Ycoord - _nodeI.Ycoord, 2));
-            _theta = Math.Atan2((_nodeJ.Ycoord - _nodeI.Ycoord), (_nodeJ.Xcoord - _nodeI.Xcoord));
+            var NodeI = _nodes[0];
+            var NodeJ = _nodes[1];
+            return Math.Sqrt(Math.Pow(NodeJ.Xcoord - NodeI.Xcoord, 2) + Math.Pow(NodeJ.Ycoord - NodeI.Ycoord, 2));
         }
 
-        private void evaluateTransformationMatrix()
+        private double getMemberAngle()
         {
-            _T = Matrix<double>.Build.Dense(2, 4);
-            _T[0, 0] = Math.Cos(_theta);
-            _T[0, 1] = Math.Sin(_theta);
-            _T[0, 2] = 0;
-            _T[0, 3] = 0;
-
-            _T[1, 0] = 0;
-            _T[1, 1] = 0;
-            _T[1, 2] = Math.Cos(_theta);
-            _T[1, 3] = Math.Sin(_theta);
+            var NodeI = _nodes[0];
+            var NodeJ = _nodes[1];
+            return Math.Atan2((NodeJ.Ycoord - NodeI.Ycoord), (NodeJ.Xcoord - NodeI.Xcoord));
         }
 
-        private void EvaluateLocalAndGlobalStiffnessMatrix()
+        private double getMemberAngleAsDegree()
         {
-            _K = _E * _A / _L;
-            _kl = Matrix<double>.Build.Dense(2, 2);
-            _kl[0, 0] = _K;
-            _kl[0, 1] = -_K;
-            _kl[1, 0] = -_K;
-            _kl[1, 1] = _K;
-
-            _kg = (_T.Transpose() * _kl) * _T;
+            return getMemberAngle() * 180 / Math.PI;
         }
 
         #endregion
 
         #region Public Methods
-
-        void getNodeForce()
+        public Matrix<double> GetTransposeMatrix()
         {
-            //Displacement[0, 0] = TotalDisplacementVector[2 * element.NodeI.ID - 2, 0];
-            //Displacement[1, 0] = TotalDisplacementVector[2 * element.NodeI.ID - 1, 0];
-            //Displacement[2, 0] = TotalDisplacementVector[2 * element.NodeJ.ID - 2, 0];
-            //Displacement[3, 0] = TotalDisplacementVector[2 * element.NodeJ.ID - 1, 0];
+            var theta = getMemberAngle();
+            var transposeMatrix = Matrix<double>.Build.Dense(2, 4);
+            var cosTeta= Math.Abs(Math.Cos(theta)) < 10e-10 ? 0 : Math.Cos(theta);
+            var sinTeta= Math.Abs(Math.Sign(theta)) < 10e-10 ? 0 : Math.Sin(theta);
 
-            //var displacementLocal = element.T * Displacement;
-            //element.IEndDisplacement = displacementLocal[0, 0];
-            //element.JEndDisplacement = displacementLocal[1, 0];
-            //element.IEndForce = element.E * element.A / element.L * (element.JEndDisplacement - element.IEndDisplacement);
-            //element.JEndForce = element.E * element.A / element.L * (element.IEndDisplacement - element.JEndDisplacement);
+            transposeMatrix[0, 0] = cosTeta;
+            transposeMatrix[0, 1] = sinTeta;
+
+            transposeMatrix[1, 2] = cosTeta;
+            transposeMatrix[1, 3] = sinTeta;
+
+            //transposeMatrix[2, 2] = cosTeta;
+            //transposeMatrix[2, 3] = sinTeta;
+
+            //transposeMatrix[3, 2] = -sinTeta;
+            //transposeMatrix[3, 3] = cosTeta;
+
+            return transposeMatrix;
+        }
+
+        public Matrix<double> GetLocalStiffnessMatrix()
+        {
+            /*
+            [    EA/L  ,     -EA/L   ]      
+            [   -EA/L    ,    EA/L   ]       
+            */
+
+            var L = GetMemberLength();
+
+            var K = _E * _A / L;
+
+            var kLocal = Matrix<double>.Build.Dense(2, 2);
+            kLocal[0, 0] = K;
+            kLocal[0, 1] = -K;
+            kLocal[1, 0] = -K;
+            kLocal[1, 1] = K;
+
+            return kLocal;
+        }
+
+        public Matrix<double> GetGlobalStiffnessMatrix()
+        {
+            var T = GetTransposeMatrix();
+            var kLocal = GetLocalStiffnessMatrix();
+            return (T.Transpose() * kLocal) * T;
+        }
+
+        public Matrix<double> GetGlobalDisplacementVector()
+        {
+            var NumberOfNode = Nodes.Count;
+            var dofPerNode = Nodes[0].DofPerNode;
+
+            var Displacement = Matrix<double>.Build.Dense(dofPerNode * NumberOfNode, 1);
+
+            for (int i = 0; i < Nodes.Count; i++)
+            {
+                for (int j = 0; j < Nodes[i].DofPerNode; j++)
+                {
+                    var node = (FrameNode)Nodes[i];
+                    Displacement[dofPerNode * i + j, 0] = node.DisplacementVector[j];
+                }
+            }
+
+            return Displacement;
+        }
+
+        public Matrix<double> GetLocalDisPlacementVector()
+        {
+            return GetTransposeMatrix() * GetGlobalDisplacementVector();
+        }
+
+        public Matrix<double> GetLocalForceVector()
+        {
+            return GetLocalStiffnessMatrix() * GetLocalDisPlacementVector();
         }
 
         #endregion

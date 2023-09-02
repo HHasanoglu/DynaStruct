@@ -16,7 +16,11 @@ namespace Solver.Common
             {
                 for (int j = 0; j < matrix.ColumnCount; j++)
                 {
-                    text.Append(matrix[i, j]);
+                    if (matrix[i, j]>0)
+                    {
+                        text.Append(" ");
+                    }
+                    text.Append(matrix[i, j].ToString("#0.00#"));
                     text.Append("\t\t\t");
                 }
                 text.AppendLine();

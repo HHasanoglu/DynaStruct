@@ -7,6 +7,7 @@ using DevExpress.XtraGrid.Columns;
 using DevExpress.XtraGrid.Views.Grid;
 using FORMSUI;
 using Solver;
+using Solver.Truss;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -17,15 +18,6 @@ using System.Windows.Forms;
 
 namespace FORMSUI
 {
-    public enum eBenchmarkTests
-    {
-        Test1,
-        Test2,
-        Test3,
-        Test4,
-        Test5
-    }
-
     public partial class TrussSolver : DevExpress.XtraBars.Ribbon.RibbonForm
     {
         #region Ctor
@@ -33,11 +25,10 @@ namespace FORMSUI
         public TrussSolver()
         {
             InitializeComponent();
-            SubscribeToEvents();
-            _nodesList = new List<ANode>();
-            _TrussElementsList = new List<TrussElement>();
+            _solverHelper = new TrussSolverHelper();
             setComboBoxItems();
             prepareUI();
+            SubscribeToEvents();
         }
 
         private void PrepareDataSource()
@@ -66,8 +57,7 @@ namespace FORMSUI
 
         #region Private Fields
 
-        private List<ANode> _nodesList;
-        private List<TrussElement> _TrussElementsList;
+        private TrussSolverHelper _solverHelper;
         private DataTable _dataNodeTable;
         private DataTable _dataTrussElementsTable;
         private string _strFormat = "#0.#";
@@ -129,29 +119,9 @@ namespace FORMSUI
 
         private void TestsComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            _nodesList.Clear();
-            _TrussElementsList.Clear();
+            _solverHelper.ClearNodeAndElements();
             var selectedValue = (eBenchmarkTests)((ComboBoxEdit)sender).SelectedIndex;
-            if (selectedValue == eBenchmarkTests.Test1)
-            {
-                CreateExample1();
-            }
-            else if (selectedValue == eBenchmarkTests.Test2)
-            {
-                CreateExample2();
-            }
-            else if (selectedValue == eBenchmarkTests.Test3)
-            {
-                CreateExample3();
-            }
-            else if (selectedValue == eBenchmarkTests.Test4)
-            {
-                CreateExample4();
-            }
-            else if (selectedValue == eBenchmarkTests.Test5)
-            {
-                CreateExample5();
-            }
+            _solverHelper.SetExample(selectedValue);
             prepareUI();
         }
 
@@ -180,7 +150,7 @@ namespace FORMSUI
             int nodeJ = Convert.ToInt32(txtNodeJ.EditValue);
             double E = Convert.ToDouble(txtModulusOfElasticity.EditValue);
             double A = Convert.ToDouble(txtSectionArea.EditValue);
-            AddMember(memberLabel, nodeI, nodeJ, A, E);
+            _solverHelper.AddMember(memberLabel, nodeI, nodeJ, A, E);
             AddElementsDataRows();
             drawChart();
         }
@@ -270,7 +240,7 @@ namespace FORMSUI
             if (!string.IsNullOrEmpty(selectedValue))
             {
                 eRestraint myEnumValue = (eRestraint)Enum.Parse(typeof(eRestraint), selectedValue);
-                var node = (TrussNode)_nodesList[gvNodes.FocusedRowHandle];
+                var node = (TrussNode)_solverHelper.NodeList[gvNodes.FocusedRowHandle];
                 if (gvNodes.FocusedColumn.FieldName == _columnNameXRestaint)
                 {
                     node.XRestraint = myEnumValue;
@@ -323,7 +293,7 @@ namespace FORMSUI
             _selectedRowHandle = e.RowHandle;
             if (_selectedRowHandle != GridControl.InvalidRowHandle)
             {
-                var node = (TrussNode)_nodesList[_selectedRowHandle];
+                var node = (TrussNode)_solverHelper.NodeList[_selectedRowHandle];
                 node.Ycoord = (double)gvNodes.GetRowCellValue(_selectedRowHandle, _columnNameYcoord);
                 node.Xcoord = (double)gvNodes.GetRowCellValue(_selectedRowHandle, _columnNameXcoord);
                 //node.XRestraint = (eRestraint)Enum.Parse(typeof(eRestraint), (string)gvNodes.GetRowCellValue(_selectedRowHandle, _columnNameXRestaint));
@@ -362,274 +332,12 @@ namespace FORMSUI
 
         private void BtnAnalyze_Click(object sender, System.EventArgs e)
         {
-            if (_TrussElementsList.Count > 0 && _nodesList.Count > 0)
+            if (_solverHelper.AnalyzeModel())
             {
-                _isAnalyzed = false;
-                //Assembler assembler = new Assembler(_TrussElementsList, _nodesList);
-                _isAnalyzed = true;
                 updateColorBarValues();
                 AddNodesDataRows();
                 AddElementsDataRows();
             }
-        }
-
-        private void CreateExample1()
-        {
-            AddNode(1, 0, 0);
-            AddNode(2, 5, 8.66);
-            AddNode(3, 15, 8.66);
-            AddNode(4, 20, 0);
-            AddNode(5, 10, 0);
-            AddNode(6, 10, -5);
-            var E = 200 * Math.Pow(10, 9);
-            var A = 5000;
-            AddMember(1, 1, 2, E, A);
-            AddMember(2, 2, 3, E, A);
-            AddMember(3, 3, 4, E, A);
-            AddMember(4, 4, 5, E, A);
-            AddMember(5, 1, 5, E, A);
-            AddMember(6, 2, 5, E, A);
-            AddMember(7, 3, 5, E, A);
-            AddMember(8, 5, 6, E, A);
-            AddRestrainedNode(4, true, true);
-            AddRestrainedNode(6, true, true);
-            AddLoad(1, 0, -200000);
-
-        }
-        private void CreateExample2()
-        {
-            AddNode(1, 0, 0);
-            AddNode(2, 1, 0);
-            AddNode(3, 0.5, 1);
-            var E = 1 * Math.Pow(10, 6);
-            var A = 10000;
-            AddMember(1, 1, 2, E, A);
-            AddMember(2, 2, 3, E, A);
-            AddMember(3, 3, 1, E, A);
-            AddRestrainedNode(1, true, true);
-            AddRestrainedNode(2, false, true);
-            AddLoad(3, 0, -20);
-
-
-        }
-        private void CreateExample3()
-        {
-            var E = 2 * Math.Pow(10, 11);
-            var A = 5000;
-
-            AddNode(1, 0, 6);
-            AddNode(2, 4, 6);
-            AddNode(3, 8, 6);
-            AddNode(4, 12, 6);
-            AddNode(5, 16, 6);
-            AddNode(6, 12, 2);
-            AddNode(7, 8, 0);
-            AddNode(8, 4, 2);
-
-            AddMember(1, 1, 2, E, A);
-            AddMember(2, 2, 3, E, A);
-            AddMember(3, 3, 4, E, A);
-            AddMember(4, 4, 5, E, A);
-            AddMember(5, 5, 6, E, A);
-            AddMember(6, 6, 7, E, A);
-            AddMember(7, 7, 8, E, A);
-            AddMember(8, 1, 8, E, A);
-            AddMember(9, 2, 8, E, A);
-            AddMember(10, 3, 7, E, A);
-            AddMember(11, 4, 6, E, A);
-            AddMember(12, 3, 8, E, A);
-            AddMember(13, 3, 6, E, A);
-
-
-            AddRestrainedNode(1, true, true);
-            AddRestrainedNode(5, false, true);
-
-            AddLoad(2, 0, -10000);
-            AddLoad(3, 0, -30000);
-            AddLoad(4, 0, -5000);
-        }
-        private void CreateExample4()
-        {
-            var E = 200 * Math.Pow(10, 9);
-            var A = 5000;
-            int node = 0;
-            AddNode(++node, 0, 0);
-            AddNode(++node, 10, 10);
-            AddNode(++node, 20, 8.333);
-            AddNode(++node, 30, 6.667);
-            AddNode(++node, 40, 5);
-            AddNode(++node, 50, 3.333);
-            AddNode(++node, 60, 1.667);
-            AddNode(++node, 70, 3.333);
-            AddNode(++node, 80, 1.667);
-            AddNode(++node, 90, 3.333);
-            AddNode(++node, 100, 5);
-            AddNode(++node, 110, 6.667);
-            AddNode(++node, 120, 8.333);
-            AddNode(++node, 130, 10);
-            AddNode(++node, 140, 0);
-            AddNode(++node, 130, 0);
-            AddNode(++node, 120, 0);
-            AddNode(++node, 110, 0);
-            AddNode(++node, 100, 0);
-            AddNode(++node, 90, 0);
-            AddNode(++node, 80, 0);
-            AddNode(++node, 70, 0);
-            AddNode(++node, 60, 0);
-            AddNode(++node, 50, 0);
-            AddNode(++node, 40, 0);
-            AddNode(++node, 30, 0);
-            AddNode(++node, 20, 0);
-            AddNode(++node, 10, 0);
-            int member = 0;
-            for (int i = 1; i <= 27; i++)
-            {
-                if (i != 15)
-                {
-                    AddMember(++member, i, i + 1, E, A);
-                }
-            }
-            int end = 28;
-            for (int i = 2; i <= 14; i++)
-            {
-                AddMember(member, i, end, E, A);
-                member++;
-                end--;
-            }
-
-            AddMember(++member, 3, 28, E, A);
-            AddMember(++member, 4, 27, E, A);
-            AddMember(++member, 5, 26, E, A);
-            AddMember(++member, 6, 25, E, A);
-            AddMember(++member, 7, 24, E, A);
-            AddMember(++member, 7, 22, E, A);
-            AddMember(++member, 9, 22, E, A);
-            AddMember(++member, 9, 20, E, A);
-            AddMember(++member, 10, 19, E, A);
-            AddMember(++member, 11, 18, E, A);
-            AddMember(++member, 12, 17, E, A);
-            AddMember(++member, 13, 16, E, A);
-
-            AddRestrainedNode(1, true, true);
-            AddRestrainedNode(15, true, true);
-            AddRestrainedNode(16, true, true);
-            AddRestrainedNode(28, true, true);
-            for (int i = 17; i <= 27; i++)
-            {
-                AddLoad(i, 0, -40000);
-            }
-
-        }
-        private void CreateExample5()
-        {
-            var E = 200 * Math.Pow(10, 9);
-            var A = 5000;
-            int node = 0;
-            AddNode(++node, 0, 0);
-            AddNode(++node, 9.804, 18);
-            AddNode(++node, 20, 18);
-            AddNode(++node, 30.195, 18);
-            AddNode(++node, 40, 18);
-            AddNode(++node, 50.715, 18);
-            AddNode(++node, 62.939, 18);
-            AddNode(++node, 76.204, 18);
-            AddNode(++node, 90, 18);
-            AddNode(++node, 103.79, 18);
-            AddNode(++node, 117.06, 18);
-            AddNode(++node, 129.28, 18);
-            AddNode(++node, 140, 18);
-            AddNode(++node, 149.8, 18);
-            AddNode(++node, 160, 18);
-            AddNode(++node, 170.19, 18);
-            AddNode(++node, 180, 0);
-            AddNode(++node, 170.16, 5.194);
-            AddNode(++node, 160, 6.948);
-            AddNode(++node, 149.8, 5.194);
-            AddNode(++node, 140, 0);
-            AddNode(++node, 129.28, 4.939);
-            AddNode(++node, 117.06, 8.61);
-            AddNode(++node, 103.79, 10.87);
-            AddNode(++node, 90, 11.633);
-            AddNode(++node, 76.204, 10.87);
-            AddNode(++node, 62.939, 8.61);
-            AddNode(++node, 50.715, 4.939);
-            AddNode(++node, 40, 0);
-            AddNode(++node, 30.195, 5.194);
-            AddNode(++node, 20, 6.948);
-            AddNode(++node, 9.804, 5.194);
-            int member = 0;
-            for (int i = 1; i <= 31; i++)
-            {
-                AddMember(++member, i, i + 1, E, A);
-            }
-            int end = 32;
-            for (int i = 2; i <= 16; i++)
-            {
-                AddMember(member, i, end, E, A);
-                member++;
-                end--;
-            }
-
-            AddMember(++member, 1, 32, E, A);
-            AddMember(++member, 3, 32, E, A);
-            AddMember(++member, 3, 30, E, A);
-            AddMember(++member, 4, 29, E, A);
-            AddMember(++member, 6, 29, E, A);
-            AddMember(++member, 7, 28, E, A);
-            AddMember(++member, 8, 27, E, A);
-            AddMember(++member, 9, 26, E, A);
-            AddMember(++member, 9, 24, E, A);
-            AddMember(++member, 10, 23, E, A);
-            AddMember(++member, 11, 22, E, A);
-            AddMember(++member, 12, 21, E, A);
-            AddMember(++member, 14, 21, E, A);
-            AddMember(++member, 15, 20, E, A);
-            AddMember(++member, 15, 18, E, A);
-
-            AddRestrainedNode(1, true, true);
-            AddRestrainedNode(17, true, true);
-            AddRestrainedNode(21, true, true);
-            AddRestrainedNode(29, true, true);
-
-            AddLoad(6, 0, -200000);
-            AddLoad(7, 0, -200000);
-            AddLoad(8, 0, -200000);
-            AddLoad(9, 0, -200000);
-            AddLoad(10, 0, -200000);
-            AddLoad(11, 0, -200000);
-            AddLoad(12, 0, -200000);
-
-        }
-        private void AddLoad(int nodeId, double fx, double fy)
-        {
-            var node = (TrussNode)GetNodeById(nodeId);
-            node.Fx = fx;
-            node.Fy = fy;
-
-        }
-
-        private void AddRestrainedNode(int nodeId, bool isXRestrained, bool isYRestrained)
-        {
-            var node = (TrussNode)GetNodeById(nodeId);
-            node.XRestraint = isXRestrained ? eRestraint.Restrained : eRestraint.Free;
-            node.YRestraint = isYRestrained ? eRestraint.Restrained : eRestraint.Free;
-        }
-
-        private ANode GetNodeById(int NodeId)
-        {
-            return _nodesList.FirstOrDefault(x => x.ID == NodeId);
-        }
-
-        private void AddNode(int ID, double X, double Y)
-        {
-            _nodesList.Add(new TrussNode(ID, X, Y));
-        }
-
-        public void AddMember(int memberLabel, int nodeI, int nodeJ, double E, double Area)
-        {
-            var nodei = GetNodeById(nodeI);
-            var nodej = GetNodeById(nodeJ);
-            _TrussElementsList.Add(new TrussElement(memberLabel, nodei, nodej, E, Area));
         }
 
         private void prepareUI()
@@ -638,8 +346,6 @@ namespace FORMSUI
             SetNodeTableColumns();
             SetElementsTableColumns();
             SetBCTableColumns();
-
-            txtNodeIDForNodes.EditValue = _nodesList.Count + 1;
             PrepareDataSource();
             scaleTrackbar.Minimum = 0;
             scaleTrackbar.Maximum = 10;
@@ -670,6 +376,8 @@ namespace FORMSUI
             List<double> intensities = GetIntesities(numPoints, type);
 
             // Create a ColorMap object with the jet colormap and the range of intensities
+            _minVal = _solverHelper.GetMinValueForColorMap(_cmbResultsIndex);
+            _maxVal = _solverHelper.GetMaxValueForColorMap(_cmbResultsIndex);
             SetColorMap(xcoordList, ycoordList, series, seriesView, intensities, _minVal, _maxVal);
             chartDrawing.Series.Add(series);
         }
@@ -678,11 +386,11 @@ namespace FORMSUI
         {
             xcoordList = new List<double>();
             ycoordList = new List<double>();
-            foreach (var element in _TrussElementsList)
+            foreach (var element in _solverHelper.ElementList)
             {
                 //var element = _TrussElementsList.First();
-                var NodeI = (TrussNode)element.NodeI;
-                var NodeJ = (TrussNode)element.NodeJ;
+                var NodeI = ((TrussElement)element).NodeI;
+                var NodeJ = ((TrussElement)element).NodeJ;
                 double x1 = NodeI.Xcoord;
                 double x2 = NodeJ.Xcoord;
                 double y1 = NodeI.Ycoord;
@@ -718,37 +426,14 @@ namespace FORMSUI
             seriesView.PointMarkerOptions.Size = 4;
         }
 
-        private void SetMinMaxValues(eResultToShow type)
-        {
-            switch (type)
-            {
-                case eResultToShow.Dispx:
-                    _minVal = _nodesList.Cast<TrussNode>().Min(x => Math.Abs(x.Dispx));
-                    _maxVal = _nodesList.Cast<TrussNode>().Max(x => Math.Abs(x.Dispx));
-                    break;
-                case eResultToShow.Dispy:
-                    _minVal = _nodesList.Cast<TrussNode>().Min(x => Math.Abs(x.Dispy));
-                    _maxVal = _nodesList.Cast<TrussNode>().Max(x => Math.Abs(x.Dispy));
-                    break;
-                case eResultToShow.Dispxy:
-                    _minVal = _nodesList.Cast<TrussNode>().Min(x => Math.Abs(x.Dispxy));
-                    _maxVal = _nodesList.Cast<TrussNode>().Max(x => Math.Abs(x.Dispxy));
-                    break;
-                default:
-                    _minVal = _nodesList.Cast<TrussNode>().Min(x => Math.Abs(x.Dispy));
-                    _maxVal = _nodesList.Cast<TrussNode>().Max(x => Math.Abs(x.Dispy));
-                    break;
-            }
-        }
-
         private List<double> GetIntesities(int numPoints, eResultToShow type)
         {
             var intensities = new List<double>();
 
-            foreach (var element in _TrussElementsList)
+            foreach (TrussElement element in _solverHelper.ElementList)
             {
-                var NodeI = (TrussNode)element.NodeI;
-                var NodeJ = (TrussNode)element.NodeJ;
+                var NodeI = element.NodeI;
+                var NodeJ = element.NodeJ;
                 SetStartAndEndValues(type, NodeI, NodeJ, out double start, out double End);
                 intensities.AddRange(Enumerable.Range(0, numPoints).Select(i => Math.Abs(start + i * (End - start) / (numPoints - 1.0))));
             }
@@ -892,7 +577,7 @@ namespace FORMSUI
         {
             DataRow row;
             _dataNodeTable.Rows.Clear();
-            foreach (TrussNode node in _nodesList)
+            foreach (TrussNode node in _solverHelper.NodeList)
             {
                 row = _dataNodeTable.NewRow();
                 row[_columnNameNodeId] = node.ID;
@@ -967,10 +652,10 @@ namespace FORMSUI
         {
             DataRow row;
             _dataTrussElementsTable.Rows.Clear();
-            foreach (TrussElement elemnent in _TrussElementsList)
+            foreach (TrussElement elemnent in _solverHelper.ElementList)
             {
                 row = _dataTrussElementsTable.NewRow();
-                row[_columnNameElementId] = elemnent.ID;
+                row[_columnNameElementId] = elemnent.Id;
                 row[_columnNameElementNodeI] = elemnent.NodeI.ID;
                 row[_columnNameElementNodeJ] = elemnent.NodeJ.ID;
                 row[_columnNameElementSectionLength] = elemnent.L.ToString(_strFormat);
@@ -1015,47 +700,51 @@ namespace FORMSUI
 
         private void DrawLoadingInfo()
         {
-            foreach (var node in _nodesList)
+            foreach (var node in _solverHelper.NodeList)
             {
-                var castedNode = (TrussNode)node;
-                Series series = new Series(castedNode.ID.ToString(), ViewType.Line);
-                Series seriespoint = new Series("", ViewType.Point);
-
-                if (castedNode.Fx != 0)
+                var castedNode = node as TrussNode;
+                if (castedNode != null)
                 {
-                    if (castedNode.Fx < 0)
+
+                    Series series = new Series(castedNode.ID.ToString(), ViewType.Line);
+                    Series seriespoint = new Series("", ViewType.Point);
+
+                    if (castedNode.Fx != 0)
                     {
-                        drawArrowLeft(castedNode.Xcoord, castedNode.Ycoord);
+                        if (castedNode.Fx < 0)
+                        {
+                            drawArrowLeft(castedNode.Xcoord, castedNode.Ycoord);
+                        }
+                        else
+                        {
+                            drawArrowRight(castedNode.Xcoord, castedNode.Ycoord);
+                        }
                     }
-                    else
+                    if (castedNode.Fy != 0)
                     {
-                        drawArrowRight(castedNode.Xcoord, castedNode.Ycoord);
+                        if (castedNode.Fy < 0)
+                        {
+                            drawArrowDown(castedNode.Xcoord, castedNode.Ycoord);
+                        }
+                        else
+                        {
+                            drawArrowUp(castedNode.Xcoord, castedNode.Ycoord);
+                        }
                     }
-                }
-                if (castedNode.Fy != 0)
-                {
-                    if (castedNode.Fy < 0)
-                    {
-                        drawArrowDown(castedNode.Xcoord, castedNode.Ycoord);
-                    }
-                    else
-                    {
-                        drawArrowUp(castedNode.Xcoord, castedNode.Ycoord);
-                    }
-                }
 
 
-                LineSeriesView lineView = (LineSeriesView)series.View;
-                //lineView.MarkerVisibility = DevExpress.Utils.DefaultBoolean.True;
-                //lineView.LineMarkerOptions.Size = 10;
-                //lineView.LineMarkerOptions.Kind = MarkerKind.InvertedTriangle;
-                lineView.LineStyle.Thickness = 2;
-                lineView.LineMarkerOptions.BorderColor = Color.Black;
-                lineView.LineMarkerOptions.BorderVisible = true;
-                series.ShowInLegend = false;
-                series.CrosshairEnabled = DefaultBoolean.False;
-                chartDrawing.Series.Add(series);
-                series.View.Color = Color.Orange;
+                    LineSeriesView lineView = (LineSeriesView)series.View;
+                    //lineView.MarkerVisibility = DevExpress.Utils.DefaultBoolean.True;
+                    //lineView.LineMarkerOptions.Size = 10;
+                    //lineView.LineMarkerOptions.Kind = MarkerKind.InvertedTriangle;
+                    lineView.LineStyle.Thickness = 2;
+                    lineView.LineMarkerOptions.BorderColor = Color.Black;
+                    lineView.LineMarkerOptions.BorderVisible = true;
+                    series.ShowInLegend = false;
+                    series.CrosshairEnabled = DefaultBoolean.False;
+                    chartDrawing.Series.Add(series);
+                    series.View.Color = Color.Orange;
+                }
             }
         }
 
@@ -1203,7 +892,7 @@ namespace FORMSUI
 
         private void AddNodesToSeries()
         {
-            foreach (TrussNode nodes in _nodesList)
+            foreach (TrussNode nodes in _solverHelper.NodeList)
             {
                 Series series1 = new Series("Nodes", ViewType.Point);
                 PointSeriesView seriesView = (PointSeriesView)series1.View;
@@ -1234,9 +923,9 @@ namespace FORMSUI
 
         private void AddElementsToSeries()
         {
-            foreach (var element in _TrussElementsList)
+            foreach (TrussElement element in _solverHelper.ElementList)
             {
-                Series series = new Series(element.ID.ToString(), ViewType.Line);
+                Series series = new Series(element.Id.ToString(), ViewType.Line);
                 series.Points.Add(new SeriesPoint(element.NodeI.Xcoord, element.NodeI.Ycoord));
                 series.Points.Add(new SeriesPoint(element.NodeJ.Xcoord, element.NodeJ.Ycoord));
                 LineSeriesView lineView = (LineSeriesView)series.View;
@@ -1256,11 +945,11 @@ namespace FORMSUI
         private void AdddisplacementToSeries()
         {
             var magnificationFactor = 150000000;
-            foreach (var element in _TrussElementsList)
+            foreach (TrussElement element in _solverHelper.ElementList)
             {
-                var NodeI = (TrussNode)element.NodeI;
-                var NodeJ = (TrussNode)element.NodeJ;
-                Series series = new Series(element.ID.ToString(), ViewType.Line);
+                var NodeI = element.NodeI;
+                var NodeJ = element.NodeJ;
+                Series series = new Series(element.Id.ToString(), ViewType.Line);
                 series.Points.Add(new SeriesPoint(NodeI.getXcoordFinal(magnificationFactor), NodeI.getYcoordFinal(magnificationFactor)));
                 series.Points.Add(new SeriesPoint(NodeJ.getXcoordFinal(magnificationFactor), NodeJ.getYcoordFinal(magnificationFactor)));
                 LineSeriesView lineView = (LineSeriesView)series.View;
@@ -1285,8 +974,8 @@ namespace FORMSUI
             var nodeId = Convert.ToInt32(txtNodeIDForNodes.Text);
             var xCoord = Convert.ToDouble(txtNodeX.Text);
             var yCoord = Convert.ToDouble(txtNodeY.Text);
-            AddNode(nodeId, xCoord, yCoord);
-            txtNodeIDForNodes.EditValue = _nodesList.Count + 1;
+            _solverHelper.AddNode(nodeId, xCoord, yCoord);
+            txtNodeIDForNodes.EditValue = _solverHelper.NodeList.Count + 1;
             AddNodesDataRows();
             drawChart();
         }
@@ -1301,11 +990,10 @@ namespace FORMSUI
 
         private void updateColorBarValues()
         {
-            if (_IscmbResultsIndexChanged && _isAnalyzed)
+            if (_IscmbResultsIndexChanged)
             {
                 _pieces = 10;
 
-                SetMinMaxValues(_cmbResultsIndex);
                 AddDisplacementColorMapXDirection(_cmbResultsIndex, _scale);
                 drawcolorbar();
             }

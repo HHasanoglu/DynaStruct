@@ -129,8 +129,7 @@ namespace Solver.Frame
             return (T.Transpose() * kLocal) * T;
         }
 
-
-       public Matrix<double> GetGlobalDisplacementVector()
+        public Matrix<double> GetGlobalDisplacementVector()
         {
             var NumberOfNode = Nodes.Count;
             var dofPerNode = Nodes[0].DofPerNode;
@@ -156,26 +155,7 @@ namespace Solver.Frame
 
         public Matrix<double> GetLocalForceVector()
         {
-            return GetLocalStiffnessMatrix()* GetLocalDisPlacementVector();
-        }
-        public void SetMemberForces(Matrix<double> TotalDisplacementVector)
-        {
-            var Displacement = GetGlobalDisplacementVector();
-
-            var displacementLocal = GetTransposeMatrix() * Displacement;
-
-
-            //var Displacement = Matrix<double>.Build.Dense(dofPerNode * NumberOfNode, 1);
-            //Displacement[0, 0] = TotalDisplacementVector[2 * NodeI.ID - 2, 0];
-            //Displacement[1, 0] = TotalDisplacementVector[2 * NodeI.ID - 1, 0];
-            //Displacement[2, 0] = TotalDisplacementVector[2 * NodeJ.ID - 2, 0];
-            //Displacement[3, 0] = TotalDisplacementVector[2 * NodeJ.ID - 1, 0];
-
-            //var displacementLocal = GetTransposeMatrix() * Displacement;
-            //element.IEndDisplacement = displacementLocal[0, 0];
-            //element.JEndDisplacement = displacementLocal[1, 0];
-            //element.IEndForce = element.E * element.A / element.L * (element.JEndDisplacement - element.IEndDisplacement);
-            //element.JEndForce = element.E * element.A / element.L * (element.IEndDisplacement - element.JEndDisplacement);
+            return GetLocalStiffnessMatrix() * GetLocalDisPlacementVector();
         }
 
         #endregion
@@ -198,8 +178,6 @@ namespace Solver.Frame
 
         private double getMemberAngleAsDegree()
         {
-            var NodeI = _nodes[0];
-            var NodeJ = _nodes[1];
             return getMemberAngle() * 180 / Math.PI;
         }
 

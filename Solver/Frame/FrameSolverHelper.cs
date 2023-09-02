@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace Solver.Frame
 {
-    public class SolverHelper
+    public class FrameSolverHelper
     {
         #region Ctor
-        public SolverHelper()
+        public FrameSolverHelper()
         {
             _nodeList = new List<ANode>();
             _elementList = new List<IElement>();
@@ -39,12 +39,6 @@ namespace Solver.Frame
         public void AddFrameNode(int NodeID, double Xcoord, double Ycoord)
         {
             _nodeList.Add(new FrameNode(NodeID, Xcoord, Ycoord));
-        }
-
-
-        public void AddElement(IElement Element)
-        {
-            _elementList.Add(Element);
         }
 
         public void AddFrameMember(int memberLabel, int nodeI, int nodeJ, double E, double Area, double I)
