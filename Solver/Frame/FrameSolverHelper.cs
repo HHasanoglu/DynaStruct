@@ -1,8 +1,10 @@
-﻿using System;
+﻿using Modeling;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Types;
 
 namespace Solver.Frame
 {
@@ -12,6 +14,7 @@ namespace Solver.Frame
         public FrameSolverHelper()
         {
             _nodeList = new List<ANode>();
+            _frameList = new List<Line3D>();
             _elementList = new List<IElement>();
         }
 
@@ -21,6 +24,7 @@ namespace Solver.Frame
 
         private List<ANode> _nodeList;
         private List<IElement> _elementList;
+        private List<Line3D> _frameList;
 
         #endregion
 
@@ -144,15 +148,26 @@ namespace Solver.Frame
             var E = 200e3;
             var A = 30000;
             var I = 300e6;
+
             AddFrameNode(1, 0, 0);
             AddFrameNode(2, 0, 5000);
             AddFrameNode(3, 10000, 5000);
 
-            AddFrameMember(1, 1, 2, E, A, I);
-            AddFrameMember(2, 2, 3, E, A, I);
-            AddRestrainedNode(1, true, true,true);
-            AddRestrainedNode(3, false, true,false);
+            AddFrame2D(0, 0, 0, 5000, E, A, I);
+            AddFrame2D(0,5000, 10000, 5000, E, A, I);
+
+
+            AddRestrainedNode(1, true, true, true);
+            AddRestrainedNode(3, false, true, false);
             AddLoad(2, 100000, 0);
+        }
+
+        private void AddFrame2D(double x1, double y1, double x2, double y2, double E, double I, double A )
+        {
+            var element = new Line3D(Guid.NewGuid(), new Point3D(x1, y1), new Point3D(x2, y2));
+            element.Material.YoungsModulus = E;
+            element.Section=new Section(A,I);
+            _frameList.Add(element);
         }
 
         #endregion

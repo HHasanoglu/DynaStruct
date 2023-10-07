@@ -53,6 +53,8 @@ namespace FORMSUI
             this.ribbonStatusBar1 = new DevExpress.XtraBars.Ribbon.RibbonStatusBar();
             this.ribbonPage2 = new DevExpress.XtraBars.Ribbon.RibbonPage();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.txtMomentOfInertia = new DevExpress.XtraEditors.TextEdit();
+            this.label2 = new System.Windows.Forms.Label();
             this.txtMemberLabel = new DevExpress.XtraEditors.TextEdit();
             this.label1 = new System.Windows.Forms.Label();
             this.gcElements = new DevExpress.XtraGrid.GridControl();
@@ -77,11 +79,9 @@ namespace FORMSUI
             this.label12 = new System.Windows.Forms.Label();
             this.label13 = new System.Windows.Forms.Label();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
-            this.chartDrawing = new DevExpress.XtraCharts.ChartControl();
             this.repositoryItemZoomTrackBar1 = new DevExpress.XtraEditors.Repository.RepositoryItemZoomTrackBar();
             this.repositoryItemTextEdit1 = new DevExpress.XtraEditors.Repository.RepositoryItemTextEdit();
-            this.txtMomentOfInertia = new DevExpress.XtraEditors.TextEdit();
-            this.label2 = new System.Windows.Forms.Label();
+            this.drawingPanel = new System.Windows.Forms.Panel();
             ((System.ComponentModel.ISupportInitialize)(this.ribbonControl1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.TestsComboBox)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.cmbResults)).BeginInit();
@@ -90,6 +90,7 @@ namespace FORMSUI
             ((System.ComponentModel.ISupportInitialize)(this.repositoryItemZoomTrackBar2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.scaleTrackbar)).BeginInit();
             this.groupBox2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.txtMomentOfInertia.Properties)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.txtMemberLabel.Properties)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.gcElements)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.gvElements)).BeginInit();
@@ -104,10 +105,8 @@ namespace FORMSUI
             ((System.ComponentModel.ISupportInitialize)(this.txtNodeX.Properties)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.txtNodeIDForNodes.Properties)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.chartDrawing)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.repositoryItemZoomTrackBar1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.repositoryItemTextEdit1)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.txtMomentOfInertia.Properties)).BeginInit();
             this.SuspendLayout();
             // 
             // ribbonControl1
@@ -295,6 +294,24 @@ namespace FORMSUI
             this.groupBox2.TabIndex = 45;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Elements Information";
+            // 
+            // txtMomentOfInertia
+            // 
+            this.txtMomentOfInertia.EditValue = "1000";
+            this.txtMomentOfInertia.Location = new System.Drawing.Point(172, 52);
+            this.txtMomentOfInertia.MenuManager = this.ribbonControl1;
+            this.txtMomentOfInertia.Name = "txtMomentOfInertia";
+            this.txtMomentOfInertia.Size = new System.Drawing.Size(67, 20);
+            this.txtMomentOfInertia.TabIndex = 54;
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(152, 55);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(11, 13);
+            this.label2.TabIndex = 53;
+            this.label2.Text = "I";
             // 
             // txtMemberLabel
             // 
@@ -515,17 +532,6 @@ namespace FORMSUI
             this.pictureBox1.TabIndex = 43;
             this.pictureBox1.TabStop = false;
             // 
-            // chartDrawing
-            // 
-            this.chartDrawing.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.chartDrawing.Location = new System.Drawing.Point(13, 461);
-            this.chartDrawing.Name = "chartDrawing";
-            this.chartDrawing.SeriesSerializable = new DevExpress.XtraCharts.Series[0];
-            this.chartDrawing.Size = new System.Drawing.Size(1156, 312);
-            this.chartDrawing.TabIndex = 46;
-            // 
             // repositoryItemZoomTrackBar1
             // 
             this.repositoryItemZoomTrackBar1.Name = "repositoryItemZoomTrackBar1";
@@ -534,23 +540,16 @@ namespace FORMSUI
             // 
             this.repositoryItemTextEdit1.Name = "repositoryItemTextEdit1";
             // 
-            // txtMomentOfInertia
+            // drawingPanel
             // 
-            this.txtMomentOfInertia.EditValue = "1000";
-            this.txtMomentOfInertia.Location = new System.Drawing.Point(172, 52);
-            this.txtMomentOfInertia.MenuManager = this.ribbonControl1;
-            this.txtMomentOfInertia.Name = "txtMomentOfInertia";
-            this.txtMomentOfInertia.Size = new System.Drawing.Size(67, 20);
-            this.txtMomentOfInertia.TabIndex = 54;
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(152, 55);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(11, 13);
-            this.label2.TabIndex = 53;
-            this.label2.Text = "I";
+            this.drawingPanel.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.drawingPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.drawingPanel.Location = new System.Drawing.Point(12, 462);
+            this.drawingPanel.Name = "drawingPanel";
+            this.drawingPanel.Size = new System.Drawing.Size(1157, 312);
+            this.drawingPanel.TabIndex = 49;
             // 
             // FrameSolver
             // 
@@ -558,7 +557,7 @@ namespace FORMSUI
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1288, 804);
-            this.Controls.Add(this.chartDrawing);
+            this.Controls.Add(this.drawingPanel);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.pictureBox1);
@@ -578,6 +577,7 @@ namespace FORMSUI
             ((System.ComponentModel.ISupportInitialize)(this.scaleTrackbar)).EndInit();
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.txtMomentOfInertia.Properties)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.txtMemberLabel.Properties)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.gcElements)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.gvElements)).EndInit();
@@ -593,10 +593,8 @@ namespace FORMSUI
             ((System.ComponentModel.ISupportInitialize)(this.txtNodeX.Properties)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.txtNodeIDForNodes.Properties)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.chartDrawing)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.repositoryItemZoomTrackBar1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.repositoryItemTextEdit1)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.txtMomentOfInertia.Properties)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -629,7 +627,6 @@ namespace FORMSUI
         private System.Windows.Forms.Label label12;
         private System.Windows.Forms.Label label13;
         private System.Windows.Forms.PictureBox pictureBox1;
-        private DevExpress.XtraCharts.ChartControl chartDrawing;
         private DevExpress.XtraGrid.GridControl gcElements;
         private DevExpress.XtraGrid.Views.Grid.GridView gvElements;
         private DevExpress.XtraGrid.GridControl gcNodes;
@@ -655,5 +652,6 @@ namespace FORMSUI
         private DevExpress.XtraEditors.Repository.RepositoryItemZoomTrackBar repositoryItemZoomTrackBar2;
         private DevExpress.XtraEditors.TextEdit txtMomentOfInertia;
         private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Panel drawingPanel;
     }
 }

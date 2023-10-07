@@ -1018,7 +1018,7 @@ namespace FORMSUI
             Color[] colors = { Color.Red, Color.Orange, Color.Yellow, Color.Lime, Color.Cyan, Color.Blue };
             float[] positions = { 0.0f, 0.2f, 0.4f, 0.6f, 0.8f, 1.0f };
             LinearGradientBrush brush = new LinearGradientBrush(
-                new Point(colorBarWidth, paddingTop), new Point(colorBarWidth, paddingTop + colorBarHeightWithoutPadding),
+                new PointF(colorBarWidth, paddingTop), new PointF(colorBarWidth, paddingTop + colorBarHeightWithoutPadding),
                 Color.Red, Color.Blue);
             ColorBlend blend = new ColorBlend();
             blend.Colors = colors;
